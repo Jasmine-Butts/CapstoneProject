@@ -1,0 +1,114 @@
+:root {
+  --forest: #344e41;
+  --sage: #a3b18a;
+  --cream: #f6f1e8;
+  --terracotta: #b5654d;
+  --charcoal: #292522;
+  --white: #ffffff;
+
+  font-family: Inter, Arial, sans-serif;
+  color: var(--charcoal);
+  background: var(--cream);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+  background: var(--cream);
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button,
+input {
+  font: inherit;
+}
+
+.navbar {
+  min-height: 72px;
+  padding: 0 6%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--cream);
+  border-bottom: 1px solid rgba(41, 37, 34, 0.12);
+}
+
+.brand {
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 1.7rem;
+  font-weight: 700;
+  color: var(--forest);
+}
+
+.nav-links {
+  display: flex;
+  gap: 1.5rem;
+}
+
+.nav-links a {
+  font-size: 0.95rem;
+}
+
+.nav-links a:hover {
+  color: var(--terracotta);
+}
+
+.nav-links a.active {
+  color: var(--forest);
+  font-weight: 600;
+}
+
+.page-container {
+  width: min(1200px, 90%);
+  margin: 0 auto;
+  padding: 3rem 0;
+}
+
+h1,
+h2,
+h3 {
+  font-family: Georgia, "Times New Roman", serif;
+  color: var(--forest);
+}
+
+h1 {
+  font-size: clamp(2rem, 4vw, 3.5rem);
+  margin-bottom: 0.75rem;
+}
+
+.eyebrow {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  color: var(--terracotta);
+}
+
+@media (max-width: 800px) {
+  .navbar {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 1rem;
+    padding-top: 1rem;
+    padding-bottom: 1rem;
+  }
+
+  .nav-links {
+    width: 100%;
+    overflow-x: auto;
+    padding-bottom: 0.5rem;
+  }
+}
