@@ -4,20 +4,44 @@ import { useState } from "react";
 import "./auth.css";
 
 function Signup() {
+  // Form information
+  const [name, setName] = useState("");
+  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+
+  // Password visibility
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    // Backend registration will be connected here
-    console.log("Signup submitted");
+    // Two passwords match
+    if (password !== confirmPassword) {
+      alert("Passwords do not match.");
+      return;
+    }
+
+    // The Backend will be connected here
+    const signupData = {
+      name,
+      username,
+      email,
+      password,
+    };
+
+    console.log("Signup data:", signupData);
+
+    // Backend registration will be connected here later
   };
 
   return (
     <main className="auth-page">
       <section className="auth-form-section">
         <div className="auth-container">
+
           <Link to="/" className="auth-logo">
             <span className="logo-box">
               <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -25,6 +49,7 @@ function Signup() {
                 <path d="M20 5.5c-2.8-.6-5.5 0-8 1.7V19c2.5-1.7 5.2-2.3 8-1.7V5.5Z" />
               </svg>
             </span>
+
             <span>Readscape</span>
           </Link>
 
@@ -42,6 +67,8 @@ function Signup() {
           </div>
 
           <form className="auth-form" onSubmit={handleSubmit}>
+
+            {/* Full Name */}
             <div className="form-group">
               <label htmlFor="name">Full name</label>
 
@@ -53,52 +80,104 @@ function Signup() {
 
                 <input
                   id="name"
+                  name="name"
                   type="text"
                   placeholder="Your name"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
                   required
                 />
               </div>
             </div>
 
+            {/* Username */}
+            <div className="form-group">
+              <label htmlFor="username">Username</label>
+
+              <div className="input-wrapper">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <circle cx="12" cy="8" r="4" />
+                  <path d="M4 21c.8-5 3.5-7 8-7s7.2 2 8 7" />
+                </svg>
+
+                <input
+                  id="username"
+                  name="username"
+                  type="text"
+                  placeholder="Choose a username"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  autoComplete="username"
+                  required
+                />
+              </div>
+            </div>
+
+            {/* Email */}
             <div className="form-group">
               <label htmlFor="email">Email address</label>
 
               <div className="input-wrapper">
                 <svg viewBox="0 0 24 24" aria-hidden="true">
-                  <rect x="3" y="5" width="18" height="14" rx="2" />
+                  <rect
+                    x="3"
+                    y="5"
+                    width="18"
+                    height="14"
+                    rx="2"
+                  />
                   <path d="m3 7 9 6 9-6" />
                 </svg>
 
                 <input
                   id="email"
+                  name="email"
                   type="email"
                   placeholder="reader@example.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  autoComplete="email"
                   required
                 />
               </div>
             </div>
 
+            {/* Password */}
             <div className="form-group">
               <label htmlFor="password">Password</label>
 
               <div className="input-wrapper">
                 <svg viewBox="0 0 24 24" aria-hidden="true">
-                  <rect x="5" y="10" width="14" height="10" rx="2" />
+                  <rect
+                    x="5"
+                    y="10"
+                    width="14"
+                    height="10"
+                    rx="2"
+                  />
                   <path d="M8 10V7a4 4 0 0 1 8 0v3" />
                 </svg>
 
                 <input
                   id="password"
+                  name="password"
                   type={showPassword ? "text" : "password"}
                   placeholder="At least 8 characters"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
                   minLength={8}
+                  autoComplete="new-password"
                   required
                 />
 
                 <button
                   className="password-toggle"
                   type="button"
-                  aria-label={showPassword ? "Hide password" : "Show password"}
+                  aria-label={
+                    showPassword
+                      ? "Hide password"
+                      : "Show password"
+                  }
                   onClick={() => setShowPassword(!showPassword)}
                 >
                   <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -109,20 +188,39 @@ function Signup() {
               </div>
             </div>
 
+            {/* Confirm Password */}
             <div className="form-group">
-              <label htmlFor="confirm-password">Confirm password</label>
+              <label htmlFor="confirm-password">
+                Confirm password
+              </label>
 
               <div className="input-wrapper">
                 <svg viewBox="0 0 24 24" aria-hidden="true">
-                  <rect x="5" y="10" width="14" height="10" rx="2" />
+                  <rect
+                    x="5"
+                    y="10"
+                    width="14"
+                    height="10"
+                    rx="2"
+                  />
                   <path d="M8 10V7a4 4 0 0 1 8 0v3" />
                 </svg>
 
                 <input
                   id="confirm-password"
-                  type={showConfirmPassword ? "text" : "password"}
+                  name="confirmPassword"
+                  type={
+                    showConfirmPassword
+                      ? "text"
+                      : "password"
+                  }
                   placeholder="Repeat your password"
+                  value={confirmPassword}
+                  onChange={(e) =>
+                    setConfirmPassword(e.target.value)
+                  }
                   minLength={8}
+                  autoComplete="new-password"
                   required
                 />
 
@@ -135,7 +233,9 @@ function Signup() {
                       : "Show confirmation password"
                   }
                   onClick={() =>
-                    setShowConfirmPassword(!showConfirmPassword)
+                    setShowConfirmPassword(
+                      !showConfirmPassword
+                    )
                   }
                 >
                   <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -150,32 +250,42 @@ function Signup() {
               Begin your journey
               <span>→</span>
             </button>
+
           </form>
 
           <p className="auth-switch">
-            Already have an account? <Link to="/login">Log in</Link>
+            Already have an account?{" "}
+            <Link to="/login">Log in</Link>
           </p>
-          
+
         </div>
       </section>
 
-      <CozyReadingVisual caption="Make space for the stories ahead." />
+      <CozyReadingVisual
+        caption="Make space for the stories ahead."
+      />
     </main>
   );
 }
 
 function CozyReadingVisual({ caption }) {
   return (
-    <section className="auth-visual" aria-hidden="true">
+    <section
+      className="auth-visual"
+      aria-hidden="true"
+    >
       <div className="visual-noise"></div>
+
       <div className="ambient-glow glow-one"></div>
       <div className="ambient-glow glow-two"></div>
+
       <div className="fireplace-glow"></div>
 
       <span className="spark spark-one">✦</span>
       <span className="spark spark-two">✧</span>
 
       <div className="reading-scene">
+
         <div className="leaf leaf-a"></div>
         <div className="leaf leaf-b"></div>
 
@@ -183,9 +293,11 @@ function CozyReadingVisual({ caption }) {
           <div className="book book-top">
             <span className="book-line"></span>
           </div>
+
           <div className="book book-middle">
             <span className="book-line"></span>
           </div>
+
           <div className="book book-bottom">
             <span className="book-line"></span>
           </div>
@@ -195,16 +307,20 @@ function CozyReadingVisual({ caption }) {
           <div className="flame">
             <span></span>
           </div>
+
           <div className="wick"></div>
+
           <div className="candle-body">
             <div className="candle-highlight"></div>
           </div>
+
           <div className="candle-halo"></div>
         </div>
 
         <div className="mug">
           <div className="mug-body"></div>
           <div className="mug-handle"></div>
+
           <span className="steam steam-one"></span>
           <span className="steam steam-two"></span>
         </div>
