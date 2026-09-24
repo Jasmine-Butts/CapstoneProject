@@ -1,4 +1,4 @@
-package com.app.Readscape.auth.dto;
+package com.app.Readscape.dto.auth;
 
 public class AuthResponse {
     

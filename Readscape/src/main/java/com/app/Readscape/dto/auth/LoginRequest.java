@@ -1,21 +1,12 @@
-package com.app.Readscape.auth.dto;
+package com.app.Readscape.dto.auth;
 
-public class RegisterRequest {
-    
-    private String name;
+public class LoginRequest {
+
     private String email;
     private String password;
 
-    public RegisterRequest(){
+    public LoginRequest(){
     
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
     }
     
     public String getEmail() {

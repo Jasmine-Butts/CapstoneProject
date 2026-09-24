@@ -1,4 +1,4 @@
-package com.app.Readscape.auth;
+package com.app.Readscape.service;
 
 public class AuthService {
     

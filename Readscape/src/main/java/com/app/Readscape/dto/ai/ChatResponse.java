@@ -1,4 +1,4 @@
-package com.app.Readscape.ai.dto;
+package com.app.Readscape.dto.ai;
 
 public class ChatResponse {
     

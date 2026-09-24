@@ -1,9 +1,10 @@
-package com.app.Readscape.auth;
+package com.app.Readscape.controller;
 
-import com.app.Readscape.auth.dto.*;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import com.app.Readscape.service.AuthService;
 
 @RestController 
 @RequestMapping ("/auth")
