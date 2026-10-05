@@ -23,20 +23,28 @@ public class UserAccount implements User {
     @Column(name = "name",nullable = false)
     private String name;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "account_status", nullable = false)
-    private String accountStatus;
+    private AccountStatus accountStatus;
 
-    @Column(name = "created_at", nullable = false, insertable = false, updatable = false)
+    @Column(name = "created_at", nullable = false, updatable = false)
     private OffsetDateTime createdAt;
 
-    @Column(name = "updated_at", nullable = false, insertable = false, updatable = false)
+    @Column(name = "updated_at", nullable = false, updatable = false)
     private OffsetDateTime updatedAt;
+
+    public enum AccountStatus {
+        ACTIVE,
+        SUSPENDED,
+        DISABLED
+    }
 
     public UserAccount(){}
 
     @PrePersist 
     protected void onCreate() {
         createdAt = OffsetDateTime.now();
+        updatedAt = OffsetDateTime.now();
     }
 
     @PreUpdate 
@@ -81,11 +89,11 @@ public class UserAccount implements User {
         this.name = name;
     }
 
-    public String getAccountStatus() {
+    public AccountStatus getAccountStatus() {
         return accountStatus;
     }
 
-    public void setAccountStatus(String accountStatus) {
+    public void setAccountStatus(AccountStatus accountStatus) {
         this.accountStatus = accountStatus;
     }
 

@@ -1,5 +1,5 @@
 package com.app.Readscape.security;
-
+import com.app.Readscape.entity.Role;
 import com.app.Readscape.entity.UserAccount;
 import com.app.Readscape.repo.UserRepo;
 import com.app.Readscape.service.RoleService;
@@ -10,9 +10,6 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 import org.springframework.stereotype.Service;
-
-import java.util.Optional;
-import java.util.List;
 
 @Service 
 public class CustomUserDetailsService implements UserDetailsService {
@@ -31,9 +28,9 @@ public class CustomUserDetailsService implements UserDetailsService {
 
        UserAccount user = userRepo.findByEmail(email).orElseThrow(() -> new UsernameNotFoundException("User not found :( "));
 
-       String role = roleService.getUserRole(user.getId());
+       Role role = roleService.getUserRole(user.getId());
 
-       SimpleGrantedAuthority authority = new SimpleGrantedAuthority("ROLE_" + role);
+       SimpleGrantedAuthority authority = new SimpleGrantedAuthority("ROLE_" + role.name());
        
        return org.springframework.security.core.userdetails.User.builder()
                .username(user.getEmail())

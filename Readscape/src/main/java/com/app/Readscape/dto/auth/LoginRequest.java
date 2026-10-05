@@ -3,7 +3,7 @@ package com.app.Readscape.dto.auth;
 public class LoginRequest {
 
     private String email;
-    private String password;
+    private String passwordHash;
 
     public LoginRequest(){
     
@@ -17,12 +17,12 @@ public class LoginRequest {
         this.email = email;
     }
 
-    public String getPassword() {
-        return password;
+    public String getPasswordHash() {
+        return passwordHash;
     }
 
-    public void setPassword(String password) {
-        this.password = password;
+    public void setPasswordHash(String passwordHash) {
+        this.passwordHash = passwordHash;
     }
 
 }

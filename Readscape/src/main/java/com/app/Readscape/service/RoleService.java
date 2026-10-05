@@ -1,5 +1,6 @@
 package com.app.Readscape.service;
 
+import com.app.Readscape.entity.Role;
 import com.app.Readscape.repo.*;
 import org.springframework.stereotype.Service;
 
@@ -18,7 +19,7 @@ public class RoleService {
 
     // determines a user's system-wide role
 
-    public String getUserRole(Long userId) {
+    public Role getUserRole(Long userId) {
         
         boolean isReader = readersRepo.existsById(userId);
         boolean isModerator = moderatorsRepo.existsById(userId);
@@ -31,13 +32,13 @@ public class RoleService {
         }
 
         if (isAdministrator) {
-            return "Administrator";
+            return Role.ADMINISTRATOR;
         } else if (isModerator) {
-            return "Moderator";
+            return Role.MODERATOR;
         } else if (isReader) {
-            return "Reader";
+            return Role.READER;
         } else {
-            return "Unknown";
+            throw new IllegalStateException("User must have exactly one system role");
         }
 
     }
