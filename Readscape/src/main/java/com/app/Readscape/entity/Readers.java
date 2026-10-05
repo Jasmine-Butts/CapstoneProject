@@ -6,6 +6,12 @@ import jakarta.persistence.*;
 @Table(name = "readers")
 public class Readers {
    
+    public enum ProfileVisibility {
+        PUBLIC,
+        FRIENDS_ONLY,
+        PRIVATE
+    }
+
     @Id
     @Column(name = "reader_id")
     private Long readerId;
@@ -27,8 +33,9 @@ public class Readers {
     @Column(name = "preferred_genre")
     private String preferredGenre;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "profile_visibility")
-    private Boolean profileVisibility;
+    private ProfileVisibility profileVisibility;
 
     // setters and getters 
 
@@ -81,11 +88,11 @@ public class Readers {
         this.preferredGenre = preferredGenre;
     }
 
-    public Boolean getProfileVisibility(){
+    public ProfileVisibility getProfileVisibility(){
         return profileVisibility;
     }
 
-    public void setProfileVisibility(Boolean profileVisibility){
+    public void setProfileVisibility(ProfileVisibility profileVisibility){
         this.profileVisibility = profileVisibility;
     }
 

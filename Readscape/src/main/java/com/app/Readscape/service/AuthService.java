@@ -61,6 +61,8 @@ public class AuthService {
         Readers reader = new Readers();
 
         reader.setUserAccount(user);
+        reader.setProfileVisibility(Readers.ProfileVisibility.PUBLIC);
+        
         readersRepo.save(reader);
 
         return new AuthResponse(null, user.getId(), user.getUsername(), user.getEmail(), Role.READER.name());
