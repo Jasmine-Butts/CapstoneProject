@@ -2,20 +2,33 @@ import { NavLink } from "react-router-dom";
 
 function Navbar() {
   return (
-    <header className="navbar">
-      <NavLink to="/" className="brand">
-        Readscape
-      </NavLink>
+    <nav className="navbar">
+      <div className="navbar-inner">
+        <NavLink to="/dashboard" className="brand">
+          Readscape
+        </NavLink>
 
-      <nav className="nav-links">
-        <NavLink to="/">Dashboard</NavLink>
-        <NavLink to="/library">Library</NavLink>
-        <NavLink to="/wishlist">Wishlist</NavLink>
-        <NavLink to="/statistics">Statistics</NavLink>
-        <NavLink to="/goals">Goals</NavLink>
-        <NavLink to="/profile">Profile</NavLink>
-      </nav>
-    </header>
+        <div className="nav-right">
+          <div className="nav-links">
+            <NavLink to="/dashboard">Dashboard</NavLink>
+            <NavLink to="/library">Library</NavLink>
+            <NavLink to="/wishlist">Wishlist</NavLink>
+            <NavLink to="/statistics">Statistics</NavLink>
+            <NavLink to="/goals">Goals</NavLink>
+            <NavLink to="/friends">Friends</NavLink>
+            <NavLink to="/clubs">Clubs</NavLink>
+          </div>
+
+          <NavLink
+            to="/profile"
+            className="profile-avatar"
+            title="Profile"
+          >
+            MA
+          </NavLink>
+        </div>
+      </div>
+    </nav>
   );
 }
 

@@ -1,9 +1,274 @@
+import { useMemo, useState } from "react";
+import { Link } from "react-router-dom";
+
+import {
+  libraryBooks,
+  getLibraryCounts,
+  filterLibraryBooks,
+} from "../data/libraryData";
+
 function Library() {
+  const [activeFilter, setActiveFilter] =
+    useState("all");
+
+  const [searchTerm, setSearchTerm] =
+    useState("");
+
+  const counts =
+    getLibraryCounts(libraryBooks);
+
+  const filteredBooks = useMemo(() => {
+    return filterLibraryBooks(
+      libraryBooks,
+      activeFilter,
+      searchTerm
+    );
+  }, [activeFilter, searchTerm]);
+
   return (
-    <section>
-      <h1>My Library</h1>
-      <p>Manage the books in your personal library.</p>
-    </section>
+    <>
+      <main className="library-page">
+        <Link
+          to="/dashboard"
+          className="library-back-link"
+        >
+          ← Back to overview
+        </Link>
+
+        <section className="library-hero">
+          <div>
+            <p className="small-label">
+              YOUR COLLECTION
+            </p>
+
+            <h1>The library.</h1>
+
+            <p className="library-intro">
+              Every book you're reading, have finished,
+              and hope to pick up next — kept in one
+              quiet place.
+            </p>
+          </div>
+
+          <button
+            type="button"
+            className="library-add-button"
+          >
+            + Add a book
+          </button>
+        </section>
+
+        <section className="library-counts">
+          <div className="library-count">
+            <strong>{counts.reading}</strong>
+            <span>Reading</span>
+          </div>
+
+          <div className="library-count">
+            <strong>{counts.finished}</strong>
+            <span>Finished</span>
+          </div>
+
+          <div className="library-count">
+            <strong>{counts.want}</strong>
+            <span>Want to read</span>
+          </div>
+        </section>
+
+        <section className="library-controls">
+          <div className="library-filters">
+            <button
+              type="button"
+              className={
+                activeFilter === "all"
+                  ? "active"
+                  : ""
+              }
+              onClick={() =>
+                setActiveFilter("all")
+              }
+            >
+              All books
+            </button>
+
+            <button
+              type="button"
+              className={
+                activeFilter === "reading"
+                  ? "active"
+                  : ""
+              }
+              onClick={() =>
+                setActiveFilter("reading")
+              }
+            >
+              Reading
+            </button>
+
+            <button
+              type="button"
+              className={
+                activeFilter === "finished"
+                  ? "active"
+                  : ""
+              }
+              onClick={() =>
+                setActiveFilter("finished")
+              }
+            >
+              Finished
+            </button>
+
+            <button
+              type="button"
+              className={
+                activeFilter === "want"
+                  ? "active"
+                  : ""
+              }
+              onClick={() =>
+                setActiveFilter("want")
+              }
+            >
+              Want to read
+            </button>
+          </div>
+
+          <div className="library-search">
+            <span className="library-search-icon">
+              ⌕
+            </span>
+
+            <input
+              type="text"
+              placeholder="Search title or author"
+              value={searchTerm}
+              onChange={(event) =>
+                setSearchTerm(event.target.value)
+              }
+            />
+          </div>
+        </section>
+
+        <section className="library-grid">
+          {filteredBooks.map((book) => (
+            <article
+              className="library-book"
+              key={book.id}
+            >
+              <Link
+                to={`/books/${book.id}`}
+                className="library-cover-wrap"
+              >
+                <img
+                  src={book.cover}
+                  alt={`${book.title} cover`}
+                  className="library-book-cover"
+                />
+
+                {book.status === "reading" && (
+                  <span className="library-status reading-status">
+                    {book.progress}%
+                  </span>
+                )}
+
+                {book.status === "finished" && (
+                  <span className="library-status finished-status">
+                    Finished
+                  </span>
+                )}
+              </Link>
+
+              <div className="library-book-content">
+                <Link to={`/books/${book.id}`}>
+                  <h2>{book.title}</h2>
+                </Link>
+
+                <p className="library-book-author">
+                  {book.author}
+                </p>
+
+                <p className="library-book-details">
+                  {book.genre} · {book.pages} pages
+                </p>
+
+                {book.status === "reading" && (
+                  <div className="library-reading-progress">
+                    <div className="library-progress-track">
+                      <div
+                        className="library-progress-fill"
+                        style={{
+                          width: `${book.progress}%`,
+                        }}
+                      ></div>
+                    </div>
+
+                    <span>
+                      {book.progress}% complete
+                    </span>
+                  </div>
+                )}
+
+                {book.status === "finished" && (
+                  <div className="library-finished-info">
+                    <span>
+                      ★ {book.rating}
+                    </span>
+
+                    <span>
+                      Finished {book.finishedDate}
+                    </span>
+                  </div>
+                )}
+
+                {book.status === "want" && (
+                  <button
+                    type="button"
+                    className="start-reading-button"
+                  >
+                    Start reading →
+                  </button>
+                )}
+              </div>
+            </article>
+          ))}
+        </section>
+
+        {filteredBooks.length === 0 && (
+          <div className="library-empty">
+            <h2>No books found.</h2>
+            <p>
+              Try a different search or filter.
+            </p>
+          </div>
+        )}
+      </main>
+
+      <footer className="dashboard-footer">
+        <div className="footer-inner">
+          <div>
+            <h3>Readscape</h3>
+
+            <p>
+              A quieter place to keep every book,
+              thought, and reading milestone.
+            </p>
+          </div>
+
+          <div className="footer-bottom-row">
+            <span>© 2026 Readscape</span>
+
+            <Link to="/dashboard">
+              Overview
+            </Link>
+
+            <span>
+              All reading data saved
+            </span>
+          </div>
+        </div>
+      </footer>
+    </>
   );
 }
 
