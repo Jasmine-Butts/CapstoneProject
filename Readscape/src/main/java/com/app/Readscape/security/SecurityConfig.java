@@ -73,7 +73,7 @@ public class SecurityConfig {
                     .anyRequest().authenticated()
                 )
                 .authenticationProvider(authenticationProvider(passwordEncoder()))
-                .addFilterAt(authFilter, UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(authFilter, UsernamePasswordAuthenticationFilter.class);
 
             return http.build();
         }

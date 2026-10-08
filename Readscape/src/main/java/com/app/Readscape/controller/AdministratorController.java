@@ -9,6 +9,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.app.Readscape.dto.admin.RoleChangeRequest;
 import com.app.Readscape.service.AdministratorService;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+
 
 @RestController 
 @RequestMapping("/admin")
@@ -27,4 +30,10 @@ public class AdministratorController {
         return ResponseEntity.noContent().build();
     }
 
+    // test endpoint
+    @GetMapping("/test")
+    public ResponseEntity<String> testAdmin() {
+        return ResponseEntity.ok("Admin access works!!");
+    }
+    
 }

@@ -31,9 +31,20 @@ public class AuthFilter extends OncePerRequestFilter  {
 
     @Override 
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+        
+        // temp debug logic
+        System.out.println("=========== AUTH FILTER RUNNING ===========");
+        System.out.println("METHOD: " + request.getMethod());
+        System.out.println("REQUEST URI: " + request.getRequestURI());
+
         String authHeader = request.getHeader("Authorization");
 
+        System.out.println("Bearer header present: " + (authHeader != null && authHeader.startsWith("Bearer ")));
+
+        System.out.println("AUTH HEADER EXISTS: " + (authHeader != null));
+
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            System.out.println("NO VALID BEARER HEADER");
             filterChain.doFilter(request, response);
 
             return;
@@ -61,7 +72,11 @@ public class AuthFilter extends OncePerRequestFilter  {
                 authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
 
                 SecurityContextHolder.getContext().setAuthentication(authentication);
+
+                System.out.println("JWT validation successful");
             }
+
+            System.out.println("Authenticated authorities: " + SecurityContextHolder.getContext().getAuthentication().getAuthorities());
         }
 
         filterChain.doFilter(request, response);

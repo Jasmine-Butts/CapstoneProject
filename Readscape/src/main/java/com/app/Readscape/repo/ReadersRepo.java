@@ -6,10 +6,10 @@ import java.util.Optional;
 
 public interface ReadersRepo extends JpaRepository<Readers, Long>{
     
-    Optional<Readers> findByReaderId(String readerId);
+    Optional<Readers> findByReaderId(Long readerId);
     Optional<Readers> findByProfileVisibility(String profileVisibility);
 
-    boolean existsByReaderId(String readerId);
+    boolean existsByReaderId(Long readerId);
     boolean existsByProfileVisibility(String profileVisibility);
 
 }
