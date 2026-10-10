@@ -7,6 +7,8 @@ import {
 
 import AppShell from "./components/AppShell";
 
+import Search from "./pages/Search";
+
 import Dashboard from "./pages/Dashboard";
 import Library from "./pages/Library";
 import Wishlist from "./pages/Wishlist";
@@ -21,6 +23,10 @@ import EditProfile from "./pages/EditProfile.jsx";
 import Login from "./pages/auth/Login";
 import Signup from "./pages/auth/Signup";
 import ForgotPassword from "./pages/auth/ForgotPassword";
+
+function RequireLogin() {
+  return sessionStorage.getItem("readscapeToken") ? <AppShell /> : <Navigate to="/login" replace />;
+}
 
 function App() {
   return (
@@ -49,7 +55,8 @@ function App() {
         />
 
         {/* Main application */}
-        <Route element={<AppShell />}>
+        <Route element={<RequireLogin />}>
+          <Route path="/search" element={<Search />} />
           <Route
             path="/dashboard"
             element={<Dashboard />}

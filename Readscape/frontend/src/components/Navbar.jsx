@@ -11,6 +11,7 @@ function Navbar() {
         <div className="nav-right">
           <div className="nav-links">
             <NavLink to="/dashboard">Dashboard</NavLink>
+            <NavLink to="/search">Search</NavLink>
             <NavLink to="/library">Library</NavLink>
             <NavLink to="/wishlist">Wishlist</NavLink>
             <NavLink to="/statistics">Statistics</NavLink>

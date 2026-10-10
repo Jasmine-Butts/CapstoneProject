@@ -1,12 +1,12 @@
 export const profileData = {
   initials: "MA",
-  name: "Maya Anderson",
-  username: "@maya.reads",
-  location: "Portland, OR",
-  readerSince: 2023,
+  name: "Hiwete Teshale",
+  username: "@hiwetet",
+  location: "Greensboro, NC",
+  readerSince: 2026,
 
   bio:
-    "Reading slowly, collecting good sentences, and always keeping one more book on the nightstand.",
+    "I love to read!!!",
 
   stats: [
     {
