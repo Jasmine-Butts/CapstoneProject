@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
 
 import "./auth.css";
@@ -6,11 +6,65 @@ import "./auth.css";
 function Login() {
   const [showPassword, setShowPassword] = useState(false);
 
-  const handleSubmit = (e) => {
+  const navigate = useNavigate();
+
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+
+  const [loading, setLoading] = useState(false);
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
+
+    setError("");
+    setLoading(true);
 
     // Backend login will be connected here 
     console.log("Login submitted");
+
+    try {
+      const response = await fetch("http://localhost:8080/auth/login", 
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+              email, passwordHash: password
+            }),
+          }
+      );
+
+      if (!response.ok) {
+        throw new Error("Invalid email or password. Please try again.");
+      }
+
+      const data = await response.json();
+
+      if (!data.token) {
+        throw new Error("Authentication token missing!");
+      }
+
+      /*store token and user in React auth. session storage used for initial testing
+       - update to local storage before next progress presentation
+       - implement httponly cookie for final project
+      */ 
+      console.log("Login successful: ", data.username, data.role);
+
+      if (data.role === "ADMINISTRATOR") {
+        navigate("/admin");
+      } else if (data.role ==="MODERATOR") {
+        navigate("/moderator");
+      } else {
+        navigate("/dashboard");
+      }
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+
   };
 
   return (
@@ -59,6 +113,8 @@ function Login() {
                   type="email"
                   placeholder="reader@example.com"
                   required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                 />
               </div>
             </div>
@@ -77,6 +133,8 @@ function Login() {
                   type={showPassword ? "text" : "password"}
                   placeholder="At least 8 characters"
                   required
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
                 />
 
                 <button
@@ -104,10 +162,19 @@ function Login() {
               </Link>
             </div>
 
-            <button className="auth-submit" type="submit">
-              Enter your library
+            <button className="auth-submit" type="submit" disabled={loading}>
+              {loading ? "Signing in..." : "Enter your library"}
               <span>→</span>
             </button>
+
+            <div className="auth-error">
+              {error && (
+                <p role="alert">
+                  {error}
+                </p>
+              )}
+            </div>
+
           </form>
 
           <p className="auth-switch">

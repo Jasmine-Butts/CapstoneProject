@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
 
 import "./auth.css";
@@ -7,11 +7,52 @@ function Signup() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-  const handleSubmit = (e) => {
+  const [name, setName] = useState("");
+  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+
+
+  const navigate = useNavigate();
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     // Backend registration will be connected here
     console.log("Signup submitted");
+
+    if (password != confirmPassword) {
+      alert("Passwords do not match!");
+      return;
+    }
+
+    try {
+      const response = await fetch("http://localhost:8080/auth/register", 
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            name,
+            username,
+            email,
+            passwordHash: password,
+          })
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Registration failed!");
+      }
+
+      alert("Account created successfully!");
+      navigate("/login");
+    } catch (error) {
+      alert(error.message);
+    }
+
   };
 
   return (
@@ -55,6 +96,28 @@ function Signup() {
                   id="name"
                   type="text"
                   placeholder="Your name"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  required
+                />
+              </div>
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="username">Username</label>
+
+              <div className="input-wrapper">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <circle cx="12" cy="8" r="4" />
+                  <path d="M4 21c.8-5 3.5-7 8-7s7.2 2 8 7" />
+                </svg>
+
+                <input
+                  id="username"
+                  type="text"
+                  placeholder="Choose a username"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
                   required
                 />
               </div>
@@ -73,6 +136,8 @@ function Signup() {
                   id="email"
                   type="email"
                   placeholder="reader@example.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                   required
                 />
               </div>
@@ -92,6 +157,8 @@ function Signup() {
                   type={showPassword ? "text" : "password"}
                   placeholder="At least 8 characters"
                   minLength={8}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value )}
                   required
                 />
 
@@ -123,6 +190,8 @@ function Signup() {
                   type={showConfirmPassword ? "text" : "password"}
                   placeholder="Repeat your password"
                   minLength={8}
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value )}
                   required
                 />
 
