@@ -1,13 +1,24 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 
 import {
-  libraryBooks,
   getLibraryCounts,
   filterLibraryBooks,
 } from "../data/libraryData";
 
+import { api } from "../services/api";
 function Library() {
+  const [libraryBooks, setLibraryBooks] = useState([]);
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(null);
+  useEffect(() => { let active = true; api('/library').then(d => { if(active)setLibraryBooks(d.books); }).catch(e => {if(active)setError(e.message);}).finally(()=>{if(active)setLoading(false);}); return ()=>{active=false;}; }, []);
+  async function update(book, status, currentPage) {
+    setSaving(book.id); setError('');
+    try { await api(`/library/${encodeURIComponent(book.id)}`, {method:'PATCH',body:JSON.stringify({status,currentPage})}); const data=await api('/library'); setLibraryBooks(data.books); }
+    catch(e) {setError(e.message);} finally {setSaving(null);}
+  }
+
   const [activeFilter, setActiveFilter] =
     useState("all");
 
@@ -23,7 +34,7 @@ function Library() {
       activeFilter,
       searchTerm
     );
-  }, [activeFilter, searchTerm]);
+  }, [libraryBooks, activeFilter, searchTerm]);
 
   return (
     <>
@@ -50,12 +61,7 @@ function Library() {
             </p>
           </div>
 
-          <button
-            type="button"
-            className="library-add-button"
-          >
-            + Add a book
-          </button>
+          <Link to="/search" className="library-add-button">+ Add a book</Link>
         </section>
 
         <section className="library-counts">
@@ -150,6 +156,8 @@ function Library() {
           </div>
         </section>
 
+        {error && <p role="alert">{error}</p>}
+        {loading && <p role="status">Loading your library…</p>}
         <section className="library-grid">
           {filteredBooks.map((book) => (
             <article
@@ -180,6 +188,12 @@ function Library() {
               </Link>
 
               <div className="library-book-content">
+                {book.status === 'reading' && <form onSubmit={event => {event.preventDefault(); update(book, 'reading', Number(new FormData(event.currentTarget).get('page')));}}>
+                  <label>Current page <input name="page" type="number" min="0" max={book.pages || undefined} defaultValue={book.currentPage} key={book.currentPage} required /></label>
+                  <button disabled={saving !== null}>Save progress</button>
+                  <button type="button" disabled={saving !== null} onClick={() => update(book, 'finished', book.pages || book.currentPage)}>Mark finished</button>
+                </form>}
+
                 <Link to={`/books/${book.id}`}>
                   <h2>{book.title}</h2>
                 </Link>
@@ -212,11 +226,11 @@ function Library() {
                 {book.status === "finished" && (
                   <div className="library-finished-info">
                     <span>
-                      ★ {book.rating}
+                      Finished
                     </span>
 
                     <span>
-                      Finished {book.finishedDate}
+
                     </span>
                   </div>
                 )}
@@ -225,6 +239,8 @@ function Library() {
                   <button
                     type="button"
                     className="start-reading-button"
+                    disabled={saving !== null}
+                    onClick={() => update(book, "reading", 0)}
                   >
                     Start reading →
                   </button>
@@ -234,7 +250,7 @@ function Library() {
           ))}
         </section>
 
-        {filteredBooks.length === 0 && (
+        {!loading && !error && filteredBooks.length === 0 && (
           <div className="library-empty">
             <h2>No books found.</h2>
             <p>

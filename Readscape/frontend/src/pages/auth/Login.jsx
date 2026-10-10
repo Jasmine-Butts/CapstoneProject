@@ -1,16 +1,22 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
 
 import "./auth.css";
+import { api, saveLogin } from "../../services/api";
 
 function Login() {
   const [showPassword, setShowPassword] = useState(false);
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-
-    // Backend login will be connected here 
-    console.log("Login submitted");
+  const navigate = useNavigate();
+  const [error, setError] = useState('');
+  const [busy, setBusy] = useState(false);
+  const handleSubmit = async (e) => {
+    e.preventDefault(); setError(''); setBusy(true);
+    const form = new FormData(e.currentTarget);
+    try {
+      const data = await api('/auth/login', { method: 'POST', body: JSON.stringify({ identifier: form.get('identifier'), password: form.get('password') }) });
+      saveLogin(data); navigate('/dashboard');
+    } catch (err) { setError(err.message); } finally { setBusy(false); }
   };
 
   return (
@@ -46,7 +52,7 @@ function Login() {
 
           <form className="auth-form" onSubmit={handleSubmit}>
             <div className="form-group">
-              <label htmlFor="email">Email address</label>
+              <label htmlFor="email">Username or email</label>
 
               <div className="input-wrapper">
                 <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -56,7 +62,9 @@ function Login() {
 
                 <input
                   id="email"
-                  type="email"
+                  type="text"
+                  name="identifier"
+                  autoComplete="username"
                   placeholder="reader@example.com"
                   required
                 />
@@ -74,6 +82,8 @@ function Login() {
 
                 <input
                   id="password"
+                  name="password"
+                  autoComplete="current-password"
                   type={showPassword ? "text" : "password"}
                   placeholder="At least 8 characters"
                   required
@@ -93,18 +103,8 @@ function Login() {
               </div>
             </div>
 
-            <div className="form-options">
-              <label className="remember">
-                <input type="checkbox" />
-                <span>Remember me</span>
-              </label>
-
-              <Link to="/forgot-password" className="accent-link">
-                Forgot password?
-              </Link>
-            </div>
-
-            <button className="auth-submit" type="submit">
+            {error && <p role="alert">{error}</p>}
+            <button className="auth-submit" type="submit" disabled={busy}>
               Enter your library
               <span>→</span>
             </button>
