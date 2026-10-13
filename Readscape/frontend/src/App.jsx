@@ -19,70 +19,76 @@ import Login from "./pages/auth/Login";
 import Signup from "./pages/auth/Signup";
 import ForgotPassword from "./pages/auth/ForgotPassword";
 
+import { AuthProvider } from "./services/AuthContext";
+import ProtectedRoute from "./components/ProtectedRoute";
+
 function App() {
   return (
-    <BrowserRouter>
-      <Routes>
+    <AuthProvider>
+      <BrowserRouter>
+        <Routes>
 
-        {/* Authentication pages */}
-        <Route
-          path="/"
-          element={<Navigate to="/login" replace />}
-        />
-
-        <Route
-          path="/login"
-          element={<Login />}
-        />
-
-        <Route
-          path="/signup"
-          element={<Signup />}
-        />
-
-        <Route path="/forgot-password" element={<ForgotPassword />} />
-
-
-        {/* Main application */}
-        <Route element={<AppShell />}>
+          {/* Authentication pages */}
           <Route
-            path="/dashboard"
-            element={<Dashboard />}
+            path="/"
+            element={<Navigate to="/login" replace />}
           />
 
           <Route
-            path="/library"
-            element={<Library />}
+            path="/login"
+            element={<Login />}
           />
 
           <Route
-            path="/wishlist"
-            element={<Wishlist />}
+            path="/signup"
+            element={<Signup />}
           />
 
-          <Route
-            path="/books/:id"
-            element={<BookDetails />}
-          />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
 
-          <Route
-            path="/statistics"
-            element={<Statistics />}
-          />
+          <Route element={<ProtectedRoute />}>
+          {/* Main application */}
+            <Route element={<AppShell />}>
+              <Route
+                path="/dashboard"
+                element={<Dashboard />}
+              />
 
-          <Route
-            path="/goals"
-            element={<Goals />}
-          />
+              <Route
+                path="/library"
+                element={<Library />}
+              />
 
-          <Route
-            path="/profile"
-            element={<Profile />}
-          />
-        </Route>
+              <Route
+                path="/wishlist"
+                element={<Wishlist />}
+              />
 
-      </Routes>
-    </BrowserRouter>
+              <Route
+                path="/books/:id"
+                element={<BookDetails />}
+              />
+
+              <Route
+                path="/statistics"
+                element={<Statistics />}
+              />
+
+              <Route
+                path="/goals"
+                element={<Goals />}
+              />
+
+              <Route
+                path="/profile"
+                element={<Profile />}
+              />
+            </Route>
+          </Route>
+
+        </Routes>
+      </BrowserRouter>
+    </AuthProvider>
   );
 }
 

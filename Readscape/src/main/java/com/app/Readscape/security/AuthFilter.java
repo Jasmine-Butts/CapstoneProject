@@ -76,7 +76,11 @@ public class AuthFilter extends OncePerRequestFilter  {
                 System.out.println("JWT validation successful");
             }
 
-            System.out.println("Authenticated authorities: " + SecurityContextHolder.getContext().getAuthentication().getAuthorities());
+            if (SecurityContextHolder.getContext().getAuthentication() != null) {
+                System.out.println("Authenticated authorities: " 
+                + SecurityContextHolder.getContext().getAuthentication().getAuthorities());
+            }
+            
         }
 
         filterChain.doFilter(request, response);

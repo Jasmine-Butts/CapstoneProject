@@ -1,5 +1,6 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
+import { useAuth } from "../../services/AuthContext"; 
 
 import "./auth.css";
 
@@ -7,6 +8,7 @@ function Login() {
   const [showPassword, setShowPassword] = useState(false);
 
   const navigate = useNavigate();
+  const { login } = useAuth();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -50,6 +52,16 @@ function Login() {
        - update to local storage before next progress presentation
        - implement httponly cookie for final project
       */ 
+        sessionStorage.setItem("token", data.token);
+          const userData = {
+            userId: data.userId,
+            username: data.username,
+            email: data.email,
+            role: data.role
+          };
+
+          login(userData, data.token);
+        
       console.log("Login successful: ", data.username, data.role);
 
       if (data.role === "ADMINISTRATOR") {
