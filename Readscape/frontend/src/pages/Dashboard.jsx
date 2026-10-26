@@ -1,148 +1,315 @@
+import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
+import { useSharedGoals } from "../context/GoalsContext";
+import { useSharedProfile } from "../context/ProfileContext";
 
 import {
   dashboardData,
   getMonthlyBarHeight,
 } from "../data/dashboardData";
 
+import { useSharedBooks } from "../context/BooksContext";
+import UpdateProgressForm from "../components/UpdateProgressForm";
+
 function Dashboard() {
+  const { books, updateReadingProgress } = useSharedBooks();
+  const { goals } = useSharedGoals();
+  const [progressBook, setProgressBook] = useState(null);
+  const { profile } = useSharedProfile();
+
+  const today = new Date();
+
+  const dateLabel = today.toLocaleDateString("en-US", {
+    weekday: "long",
+    month: "long",
+    day: "numeric",
+  });
+
+  const readingBooks = useMemo(
+    () => books.filter((book) => book.status === "reading"),
+    [books]
+  );
+
+  const finishedBooks = useMemo(
+    () => books.filter((book) => book.status === "finished"),
+    [books]
+  );
+
+  const wishlistBooks = useMemo(
+    () => books.filter((book) => book.status === "want"),
+    [books]
+  );
+
+  // Show the first book currently being read.
+  const currentBook = readingBooks[0] || null;
+
+  // Use the current Library books 
+  const readingQueue = wishlistBooks.slice(0, 3);
+
+  const recentBooks = finishedBooks.slice(0, 3);
+
+ const mainGoal =
+  goals.find((goal) => goal.main) || goals[0] || null;
+
+const goalTarget = Number(mainGoal?.target) || 0;
+
+const recordedPages = books.reduce((total, book) => {
+  const pages = Number(book.pages) || 0;
+
+  if (book.status === "finished") {
+    return total + pages;
+  }
+
+  if (book.status === "reading") {
+    const currentPage = book.currentPage ??
+      Math.round(
+        pages * (Number(book.progress) || 0) / 100
+      );
+
+    return total + currentPage;
+  }
+
+  return total;
+}, 0);
+
+const goalCurrent = !mainGoal
+  ? 0
+  : mainGoal.unit === "books"
+    ? finishedBooks.length
+    : mainGoal.unit === "pages"
+      ? recordedPages
+      : Number(mainGoal.current) || 0;
+
+
+  // only have a percentage rather than an exact page number.
+  function getPagesRead(book) {
+    const totalPages = Number(book.pages) || 0;
+
+    if (book.status === "finished") {
+      return totalPages;
+    }
+
+    if (book.status !== "reading") {
+      return 0;
+    }
+
+    return book.currentPage ??
+      Math.round(
+        totalPages * (Number(book.progress) || 0) / 100
+      );
+  }
+
+  const pagesRecorded = useMemo(
+    () => books.reduce(
+      (total, book) => total + getPagesRead(book),
+      0
+    ),
+    [books]
+  );
+
+  const readingProgress = [
+    {
+      value: String(finishedBooks.length),
+      label: "Books finished",
+    },
+    {
+      value: String(readingBooks.length),
+      label: "Currently reading",
+    },
+    {
+      value: String(wishlistBooks.length),
+      label: "Want to read",
+    },
+    {
+      value: pagesRecorded.toLocaleString(),
+      label: "Pages recorded (est.)",
+    },
+  ];
+
+  const currentPage = currentBook
+    ? getPagesRead(currentBook)
+    : 0;
+
+  const monthlyActivity = dashboardData.monthlyActivity;
+
   return (
     <>
       <main className="dashboard-page">
-        {/* HERO */}
 
+        {/* HERO */}
         <section className="dashboard-hero">
           <div className="hero-copy">
             <p className="dashboard-date">
-              Monday, October 5
+              {dateLabel}
             </p>
 
             <h1>
-              A good evening
+              A good day
               <br />
               to keep reading.
             </h1>
 
             <p className="hero-description">
-              Welcome back, {dashboardData.userName}. You read 126 pages this
-              week and kept your pace for another seven days.
+              Welcome back, {profile.name?.trim().split(/\s+/)[0] || "Reader"}.
+              You have {readingBooks.length} books in
+              progress and {wishlistBooks.length} waiting
+              to be explored.
             </p>
           </div>
 
-          <div className="goal-summary">
-            <p className="small-label">
-              2026 GOAL
-            </p>
+        <div className="goal-summary">
+  <p className="small-label">
+    MAIN READING GOAL
+  </p>
 
-            <h2>
-              {dashboardData.goalCurrent} of{" "}
-              {dashboardData.goalTarget} books
-            </h2>
+  {mainGoal ? (
+    <>
+      <h2>{mainGoal.title}</h2>
 
-            <p>
-              {dashboardData.aheadOfSchedule} books ahead of schedule
-            </p>
-          </div>
-        </section>
+      <p>
+        {goalCurrent.toLocaleString()} of{" "}
+        {goalTarget.toLocaleString()}{" "}
+        {mainGoal.unit}
+      </p>
+
+      <p>
+        {Math.max(
+          goalTarget - goalCurrent,
+          0
+        ).toLocaleString()}{" "}
+        {mainGoal.unit} remaining
+      </p>
+
+      <Link to="/goals" className="text-link">
+        Manage goals
+      </Link>
+    </>
+  ) : (
+    <>
+      <h2>No reading goal yet</h2>
+
+      <Link to="/goals" className="text-link">
+        Create a goal
+      </Link>
+    </>
+  )}
+</div>
+</section>
 
         {/* CURRENTLY READING */}
-
         <section className="featured-reading">
           <div className="featured-copy">
             <p className="small-label">
               CURRENTLY READING
             </p>
 
-            <h2>
-              {dashboardData.currentlyReading.title}
-            </h2>
+            {currentBook ? (
+              <>
+                <h2>{currentBook.title}</h2>
 
-            <p className="featured-author">
-              {dashboardData.currentlyReading.author}
-            </p>
+                <p className="featured-author">
+                  {currentBook.author}
+                </p>
 
-            <blockquote>
-              “{dashboardData.currentlyReading.quote}”
-            </blockquote>
+                <blockquote>
+                  Keep turning pages. Every chapter
+                  brings you closer to the finish.
+                </blockquote>
 
-            <div className="featured-progress-row">
-              <span>
-                {dashboardData.currentlyReading.progress}% complete
-              </span>
+                <div className="featured-progress-row">
+                  <span>
+                    {currentBook.progress ?? 0}% complete
+                  </span>
 
-              <span>
-                {dashboardData.currentlyReading.currentPage} /{" "}
-                {dashboardData.currentlyReading.totalPages} pages
-              </span>
-            </div>
+                  <span>
+                    {currentPage} / {currentBook.pages} pages
+                  </span>
+                </div>
 
-            <div className="featured-progress-bar">
-              <div
-                style={{
-                  width: `${dashboardData.currentlyReading.progress}%`,
-                }}
-              ></div>
-            </div>
+                <div className="featured-progress-bar">
+                  <div
+                    style={{
+                      width: `${currentBook.progress ?? 0}%`,
+                    }}
+                  />
+                </div>
 
-            <div className="featured-actions">
-              <button
-                type="button"
-                className="primary-button"
-              >
-                Update progress
-              </button>
+                <div className="featured-actions">
+                  <button
+                    type="button"
+                    className="primary-button"
+                    onClick={() => setProgressBook(currentBook)}
+                  >
+                    Update progress
+                  </button>
 
-              <button
-                type="button"
-                className="secondary-button"
-              >
-                Add note
-              </button>
-            </div>
+                  <Link
+                    to="/library"
+                    className="secondary-button"
+                  >
+                    View library
+                  </Link>
+                </div>
+              </>
+            ) : (
+              <>
+                <h2>Your next story awaits.</h2>
+
+                <p className="featured-author">
+                  You're not currently reading a book.
+                </p>
+
+                <div className="featured-actions">
+                  <Link
+                    to="/library"
+                    className="primary-button"
+                  >
+                    Explore your library
+                  </Link>
+                </div>
+              </>
+            )}
           </div>
 
           <div className="featured-cover-wrap">
-            <img
-              src={dashboardData.currentlyReading.cover}
-              alt={`${dashboardData.currentlyReading.title} cover`}
-              className="featured-cover"
-            />
+            {currentBook ? (
+              <img
+                src={currentBook.cover}
+                alt={`${currentBook.title} cover`}
+                className="featured-cover"
+              />
+            ) : (
+              <div className="featured-cover">
+                <p>Readscape</p>
+              </div>
+            )}
           </div>
         </section>
 
         {/* READING PROGRESS */}
-
         <section className="reading-progress-section">
           <p className="small-label">
             READING PROGRESS
           </p>
 
           <div className="reading-progress-grid">
-            {dashboardData.readingProgress.map(
-              (item) => (
-                <div
-                  className="progress-stat"
-                  key={item.label}
-                >
-                  <strong>
-                    {item.value}
-                  </strong>
-
-                  <span>
-                    {item.label}
-                  </span>
-                </div>
-              )
-            )}
+            {readingProgress.map((item) => (
+              <div
+                className="progress-stat"
+                key={item.label}
+              >
+                <strong>{item.value}</strong>
+                <span>{item.label}</span>
+              </div>
+            ))}
           </div>
         </section>
 
         {/* READING NOTE + MONTHLY ACTIVITY */}
-
         <section className="dashboard-middle-grid">
           <div className="reading-note-card">
             <p className="small-label">
-              READING NOTE
+              READING INSPIRATION
             </p>
 
             <blockquote>
@@ -156,45 +323,38 @@ function Dashboard() {
 
           <div className="monthly-summary">
             <p className="small-label">
-              THIS MONTH
+              SAMPLE MONTHLY ACTIVITY
             </p>
 
-            <h2>
-              A steady rhythm
-            </h2>
+            <h2>A steady rhythm</h2>
 
             <p className="monthly-pages">
-              842 pages
+              Demo activity data
             </p>
 
             <div className="monthly-bars">
-              {dashboardData.monthlyActivity.map(
-                (item) => (
+              {monthlyActivity.map((item) => (
+                <div
+                  className="month-column"
+                  key={item.month}
+                >
                   <div
-                    className="month-column"
-                    key={item.month}
-                  >
-                    <div
-                      className="month-bar"
-                      style={{
-                        height: `${getMonthlyBarHeight(
-                          item.pages
-                        )}px`,
-                      }}
-                    ></div>
+                    className="month-bar"
+                    style={{
+                      height: `${getMonthlyBarHeight(
+                        item.pages
+                      )}px`,
+                    }}
+                  />
 
-                    <span>
-                      {item.month}
-                    </span>
-                  </div>
-                )
-              )}
+                  <span>{item.month}</span>
+                </div>
+              ))}
             </div>
           </div>
         </section>
 
         {/* READING QUEUE */}
-
         <section className="queue-section">
           <div className="section-heading-row">
             <div>
@@ -202,9 +362,7 @@ function Dashboard() {
                 UP NEXT
               </p>
 
-              <h2>
-                Reading queue
-              </h2>
+              <h2>Reading queue</h2>
             </div>
 
             <Link
@@ -216,14 +374,14 @@ function Dashboard() {
           </div>
 
           <div className="queue-list">
-            {dashboardData.readingQueue.map(
-              (book) => (
+            {readingQueue.length > 0 ? (
+              readingQueue.map((book, index) => (
                 <div
                   className="queue-row"
                   key={book.id}
                 >
                   <span className="queue-number">
-                    {book.number}
+                    {String(index + 1).padStart(2, "0")}
                   </span>
 
                   <img
@@ -233,22 +391,21 @@ function Dashboard() {
                   />
 
                   <div>
-                    <h3>
-                      {book.title}
-                    </h3>
-
-                    <p>
-                      {book.author}
-                    </p>
+                    <h3>{book.title}</h3>
+                    <p>{book.author}</p>
                   </div>
                 </div>
-              )
+              ))
+            ) : (
+              <p>
+                Your reading queue is empty.
+                Add books to your Want to Read list.
+              </p>
             )}
           </div>
         </section>
 
         {/* RECENT LIBRARY */}
-
         <section className="recent-library-section">
           <div className="section-heading-row">
             <div>
@@ -256,9 +413,7 @@ function Dashboard() {
                 RECENT IN YOUR LIBRARY
               </p>
 
-              <h2>
-                Finished, remembered.
-              </h2>
+              <h2>Finished, remembered.</h2>
             </div>
 
             <Link
@@ -270,8 +425,8 @@ function Dashboard() {
           </div>
 
           <div className="recent-books-grid">
-            {dashboardData.recentBooks.map(
-              (book) => (
+            {recentBooks.length > 0 ? (
+              recentBooks.map((book) => (
                 <article
                   className="recent-book-card"
                   key={book.id}
@@ -282,57 +437,58 @@ function Dashboard() {
                     className="recent-book-cover"
                   />
 
-                  <h3>
-                    {book.title}
-                  </h3>
-
-                  <p>
-                    {book.author}
-                  </p>
+                  <h3>{book.title}</h3>
+                  <p>{book.author}</p>
 
                   <div className="recent-book-meta">
                     <span>
-                      Finished {book.finished}
+                      {book.finishedDate
+                        ? `Finished ${book.finishedDate}`
+                        : "Finished"}
                     </span>
 
-                    <span>
-                      ★ {book.rating}
-                    </span>
+                    {book.rating != null && (
+                      <span>★ {book.rating}</span>
+                    )}
                   </div>
                 </article>
-              )
+              ))
+            ) : (
+              <p>
+                Books you finish will appear here.
+              </p>
             )}
           </div>
         </section>
+
+        {/* UPDATE PROGRESS FORM */}
+        {progressBook && (
+          <UpdateProgressForm
+            key={progressBook.id}
+            book={progressBook}
+            onSave={updateReadingProgress}
+            onClose={() => setProgressBook(null)}
+          />
+        )}
+
       </main>
 
       {/* FOOTER */}
-
       <footer className="dashboard-footer">
         <div className="footer-inner">
           <div>
-            <h3>
-              Readscape
-            </h3>
+            <h3>Readscape</h3>
 
             <p>
-              A quieter place to keep every book, thought, and reading
-              milestone.
+              A quieter place to keep every book,
+              thought, and reading milestone.
             </p>
           </div>
 
           <div className="footer-bottom-row">
-            <span>
-              © 2026 Readscape
-            </span>
-
-            <span>
-              Privacy
-            </span>
-
-            <span>
-              All reading data saved
-            </span>
+            <span>© 2026 Readscape</span>
+            <span>Privacy</span>
+            <span>Reading data saved locally</span>
           </div>
         </div>
       </footer>

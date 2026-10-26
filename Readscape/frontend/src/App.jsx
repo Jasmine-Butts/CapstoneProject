@@ -7,6 +7,7 @@ import {
 
 import AppShell from "./components/AppShell";
 
+// Main application pages
 import Dashboard from "./pages/Dashboard";
 import Library from "./pages/Library";
 import Wishlist from "./pages/Wishlist";
@@ -14,20 +15,24 @@ import BookDetails from "./pages/BookDetails";
 import Statistics from "./pages/Statistics";
 import Goals from "./pages/Goals";
 import Profile from "./pages/Profile";
-import Friends from "./pages/Friends.jsx";
-import Clubs from "./pages/Clubs.jsx";
-import EditProfile from "./pages/EditProfile.jsx";
+import Friends from "./pages/Friends";
+import Clubs from "./pages/Clubs";
+import EditProfile from "./pages/EditProfile";
 
+// Authentication pages
 import Login from "./pages/auth/Login";
 import Signup from "./pages/auth/Signup";
 import ForgotPassword from "./pages/auth/ForgotPassword";
+
+// Admin and Moderator pages
+import AdminDashboard from "./pages/AdminDashboard";
+import ModeratorDashboard from "./pages/ModeratorDashboard";
 
 function App() {
   return (
     <BrowserRouter>
       <Routes>
-
-        {/* Authentication pages */}
+        {/* Authentication Pages */}
         <Route
           path="/"
           element={<Navigate to="/login" replace />}
@@ -48,7 +53,19 @@ function App() {
           element={<ForgotPassword />}
         />
 
-        {/* Main application */}
+        {/* Admin Dashboard */}
+        <Route
+          path="/admin"
+          element={<AdminDashboard />}
+        />
+
+        {/* Moderator Dashboard */}
+        <Route
+          path="/moderator"
+          element={<ModeratorDashboard />}
+        />
+
+        {/* Main Reader Application */}
         <Route element={<AppShell />}>
           <Route
             path="/dashboard"
@@ -84,6 +101,7 @@ function App() {
             path="/friends"
             element={<Friends />}
           />
+
           <Route
             path="/clubs"
             element={<Clubs />}
@@ -93,12 +111,18 @@ function App() {
             path="/profile"
             element={<Profile />}
           />
-         <Route
-          path="/profile/edit"
-          element={<EditProfile />}
+
+          <Route
+            path="/profile/edit"
+            element={<EditProfile />}
           />
         </Route>
 
+        {/* Unknown Routes */}
+        <Route
+          path="*"
+          element={<Navigate to="/login" replace />}
+        />
       </Routes>
     </BrowserRouter>
   );
