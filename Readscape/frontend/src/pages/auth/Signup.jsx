@@ -1,7 +1,8 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
 
 import "./auth.css";
+import { api } from "../../services/api";
 
 function Signup() {
   // Form information
@@ -15,26 +16,15 @@ function Signup() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-
-    // Two passwords match
-    if (password !== confirmPassword) {
-      alert("Passwords do not match.");
-      return;
-    }
-
-    // The Backend will be connected here
-    const signupData = {
-      name,
-      username,
-      email,
-      password,
-    };
-
-    console.log("Signup data:", signupData);
-
-    // Backend registration will be connected here later
+  const navigate = useNavigate();
+  const [error, setError] = useState('');
+  const [busy, setBusy] = useState(false);
+  const handleSubmit = async (e) => {
+    e.preventDefault(); setError('');
+    if (password !== confirmPassword) { setError('Passwords do not match.'); return; }
+    setBusy(true);
+    try { await api('/auth/register', { method: 'POST', body: JSON.stringify({ name, username, email, password }) }); navigate('/login'); }
+    catch (err) { setError(err.message); } finally { setBusy(false); }
   };
 
   return (
@@ -246,7 +236,8 @@ function Signup() {
               </div>
             </div>
 
-            <button className="auth-submit" type="submit">
+            {error && <p role="alert">{error}</p>}
+            <button className="auth-submit" type="submit" disabled={busy}>
               Begin your journey
               <span>→</span>
             </button>

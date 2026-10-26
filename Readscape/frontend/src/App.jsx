@@ -1,3 +1,4 @@
+
 import {
   BrowserRouter,
   Routes,
@@ -8,6 +9,7 @@ import {
 import AppShell from "./components/AppShell";
 
 // Main application pages
+import Search from "./pages/Search";
 import Dashboard from "./pages/Dashboard";
 import Library from "./pages/Library";
 import Wishlist from "./pages/Wishlist";
@@ -27,6 +29,13 @@ import ForgotPassword from "./pages/auth/ForgotPassword";
 // Admin and Moderator pages
 import AdminDashboard from "./pages/AdminDashboard";
 import ModeratorDashboard from "./pages/ModeratorDashboard";
+
+// Require a login before accessing reader pages
+function RequireLogin() {
+  return sessionStorage.getItem("readscapeToken")
+    ? <AppShell />
+    : <Navigate to="/login" replace />;
+}
 
 function App() {
   return (
@@ -65,8 +74,13 @@ function App() {
           element={<ModeratorDashboard />}
         />
 
-        {/* Main Reader Application */}
-        <Route element={<AppShell />}>
+        {/* Main application - Login required */}
+        <Route element={<RequireLogin />}>
+          <Route
+            path="/search"
+            element={<Search />}
+          />
+
           <Route
             path="/dashboard"
             element={<Dashboard />}
@@ -118,7 +132,7 @@ function App() {
           />
         </Route>
 
-        {/* Unknown Routes */}
+        {/* Unknown routes */}
         <Route
           path="*"
           element={<Navigate to="/login" replace />}

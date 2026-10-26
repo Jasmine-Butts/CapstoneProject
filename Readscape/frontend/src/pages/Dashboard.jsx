@@ -1,5 +1,6 @@
-import { useMemo, useState } from "react";
-import { Link } from "react-router-dom";
+import { useEffect, useMemo, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { api } from "../services/api";
 import { useSharedGoals } from "../context/GoalsContext";
 import { useSharedProfile } from "../context/ProfileContext";
 
@@ -16,6 +17,30 @@ function Dashboard() {
   const { goals } = useSharedGoals();
   const [progressBook, setProgressBook] = useState(null);
   const { profile } = useSharedProfile();
+  const navigate = useNavigate();
+  const [serverData, setServerData] = useState(null);
+  const [serverError, setServerError] = useState("");
+
+  useEffect(() => {
+    let active = true;
+    api("/dashboard")
+      .then((result) => {
+        if (active) setServerData(result);
+      })
+      .catch((error) => {
+        if (active) setServerError(error.message);
+      });
+    return () => { active = false; };
+  }, []);
+
+  async function logout() {
+    try {
+      await api("/auth/logout", { method: "POST" });
+    } finally {
+      sessionStorage.removeItem("readscapeToken");
+      navigate("/login");
+    }
+  }
 
   const today = new Date();
 
@@ -150,7 +175,7 @@ const goalCurrent = !mainGoal
             </h1>
 
             <p className="hero-description">
-              Welcome back, {profile.name?.trim().split(/\s+/)[0] || "Reader"}.
+              Welcome back, {serverData?.user?.name?.trim().split(/\s+/)[0] || profile.name?.trim().split(/\s+/)[0] || "Reader"}.
               You have {readingBooks.length} books in
               progress and {wishlistBooks.length} waiting
               to be explored.
@@ -195,6 +220,27 @@ const goalCurrent = !mainGoal
   )}
 </div>
 </section>
+
+        {/* BACKEND ACTIONS */}
+        <div className="featured-actions" style={{ marginBottom: "22px" }}>
+          <Link className="primary-button" to="/search">Search books</Link>
+          <button type="button" className="secondary-button" onClick={logout}>
+            Log out
+          </button>
+        </div>
+        {serverError && (
+          <p role="status">
+            Server dashboard unavailable: {serverError}. Displaying local reading data.
+          </p>
+        )}
+        {serverData?.counts && (
+          <section aria-label="Server reading summary" style={{ marginBottom: "24px" }}>
+            <p className="small-label">ACCOUNT DATA FROM SERVER</p>
+            <p>
+              {serverData.counts.reading ?? 0} reading · {serverData.counts.finished ?? 0} finished · {serverData.counts.want ?? 0} want to read
+            </p>
+          </section>
+        )}
 
         {/* CURRENTLY READING */}
         <section className="featured-reading">
