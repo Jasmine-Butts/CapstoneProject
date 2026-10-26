@@ -1,17 +1,25 @@
+
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-
-import { profileData } from "../data/profileData";
+import { useSharedProfile } from "../context/ProfileContext";
 
 function EditProfile() {
   const navigate = useNavigate();
 
+  const {
+    profile,
+    initials,
+    updateProfile,
+  } = useSharedProfile();
+
   const [formData, setFormData] = useState({
-    name: profileData.name,
-    username: profileData.username,
-    location: profileData.location,
-    bio: profileData.bio,
+    name: profile.name || "",
+    username: profile.username || "",
+    location: profile.location || "",
+    bio: profile.bio || "",
   });
+
+  const [error, setError] = useState("");
 
   function handleChange(event) {
     const { name, value } = event.target;
@@ -20,15 +28,44 @@ function EditProfile() {
       ...previous,
       [name]: value,
     }));
+
+    setError("");
   }
 
   function handleSubmit(event) {
     event.preventDefault();
 
-    // Later this can be replaced with a backend API call.
-    console.log("Updated profile:", formData);
+    const name = formData.name.trim();
+    let username = formData.username.trim();
 
-    navigate("/profile");
+    if (!name || !username) {
+      setError("Name and username are required.");
+      return;
+    }
+
+    if (!username.startsWith("@")) {
+      username = `@${username}`;
+    }
+
+    if (!/^@[a-zA-Z0-9._]{3,30}$/.test(username)) {
+      setError(
+        "Username must contain 3–30 letters, numbers, dots, or underscores."
+      );
+      return;
+    }
+
+    const saved = updateProfile({
+      name,
+      username,
+      location: formData.location.trim(),
+      bio: formData.bio.trim(),
+    });
+
+    if (saved) {
+      navigate("/profile");
+    } else {
+      setError("Unable to save profile. Please try again.");
+    }
   }
 
   return (
@@ -50,8 +87,7 @@ function EditProfile() {
 
           <p>
             Update how your name, username, and
-            reading profile appear across
-            Readscape.
+            reading profile appear across Readscape.
           </p>
         </section>
 
@@ -61,15 +97,16 @@ function EditProfile() {
         >
           <div className="edit-avatar-section">
             <div className="profile-avatar-large">
-              {profileData.initials}
+              {initials}
             </div>
 
             <div>
               <h3>Profile image</h3>
 
               <p>
-                Initials are shown for now.
-                Profile photos can be added later.
+                Your initials are generated from
+                your display name. Profile photo
+                uploads can be added later.
               </p>
             </div>
           </div>
@@ -86,6 +123,8 @@ function EditProfile() {
                 name="name"
                 value={formData.name}
                 onChange={handleChange}
+                maxLength={80}
+                required
               />
             </div>
 
@@ -100,6 +139,8 @@ function EditProfile() {
                 name="username"
                 value={formData.username}
                 onChange={handleChange}
+                maxLength={31}
+                required
               />
             </div>
 
@@ -114,6 +155,7 @@ function EditProfile() {
                 name="location"
                 value={formData.location}
                 onChange={handleChange}
+                maxLength={100}
               />
             </div>
 
@@ -126,11 +168,18 @@ function EditProfile() {
                 id="bio"
                 name="bio"
                 rows="5"
+                maxLength={500}
                 value={formData.bio}
                 onChange={handleChange}
               />
             </div>
           </div>
+
+          {error && (
+            <p role="alert" style={{ color: "#a43e3e" }}>
+              {error}
+            </p>
+          )}
 
           <div className="edit-profile-actions">
             <Link

@@ -1,6 +1,10 @@
+
 import { NavLink } from "react-router-dom";
+import { useSharedProfile } from "../context/ProfileContext";
 
 function Navbar() {
+  const { initials } = useSharedProfile();
+
   return (
     <nav className="navbar">
       <div className="navbar-inner">
@@ -25,7 +29,7 @@ function Navbar() {
             className="profile-avatar"
             title="Profile"
           >
-            MA
+            {initials}
           </NavLink>
         </div>
       </div>
