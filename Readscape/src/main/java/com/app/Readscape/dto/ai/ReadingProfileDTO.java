@@ -1,5 +1,16 @@
 package com.app.Readscape.dto.ai;
 
-public class ReadingProfileDTO {
+import java.util.List;
+
+public record ReadingProfileDTO (
+        Long readerId,
+        List<String> preferredGenres,
+        List<String> finishedBooks,
+        List<String> currentlyReading,
+        List<String> favoriteAuthors
+    ) {}
+
+        
+        
     
-}
+

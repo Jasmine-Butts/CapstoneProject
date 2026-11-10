@@ -104,11 +104,14 @@ public class SecurityConfig {
                 )
                 
                 .authorizeHttpRequests(auth -> auth
+
                     .requestMatchers("/auth/**").permitAll()
                     .requestMatchers("/admin/**").hasAuthority("ROLE_ADMINISTRATOR")
                     .requestMatchers("/users/role").hasAuthority("ROLE_ADMINISTRATOR")
                     .requestMatchers("/moderator/**").hasAnyAuthority("ROLE_MODERATOR", "ROLE_ADMINISTRATOR")
                     .requestMatchers("/reader/**").hasAnyAuthority("ROLE_READER", "ROLE_MODERATOR", "ROLE_ADMINISTRATOR")
+                    .requestMatchers("/recommendations/**").authenticated()
+                    
                     .anyRequest().authenticated()
                 )
 
