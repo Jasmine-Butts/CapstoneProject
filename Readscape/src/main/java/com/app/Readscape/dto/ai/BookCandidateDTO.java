@@ -1,5 +1,5 @@
 package com.app.Readscape.dto.ai;
 
-public class BookRecRequest {
+public class BookCandidateDTO {
     
 }

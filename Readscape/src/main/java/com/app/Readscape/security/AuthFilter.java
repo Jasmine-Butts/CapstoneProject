@@ -4,6 +4,7 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.Cookie; 
 
 import java.io.IOException;
 
@@ -17,6 +18,8 @@ import org.springframework.security.web.authentication.WebAuthenticationDetailsS
 
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
+
+import jakarta.servlet.http.Cookie;
 
 @Component
 public class AuthFilter extends OncePerRequestFilter  {

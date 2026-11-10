@@ -17,7 +17,7 @@ public class UserAccount implements User {
     @Column(name = "email",nullable = false, unique = true)
     private String email;
 
-    @Column(name = "password_hash", nullable = false)
+    @Column(name = "password_hash")
     private String passwordHash;
 
     @Column(name = "name",nullable = false)
@@ -30,7 +30,7 @@ public class UserAccount implements User {
     @Column(name = "created_at", nullable = false, updatable = false)
     private OffsetDateTime createdAt;
 
-    @Column(name = "updated_at", nullable = false, updatable = false)
+    @Column(name = "updated_at", nullable = false)
     private OffsetDateTime updatedAt;
 
     public enum AccountStatus {
