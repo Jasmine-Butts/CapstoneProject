@@ -20,6 +20,26 @@ function Dashboard() {
   const navigate = useNavigate();
   const [serverData, setServerData] = useState(null);
   const [serverError, setServerError] = useState("");
+  
+
+const [isAdmin, setIsAdmin] = useState(false);
+
+useEffect(() => {
+  let active = true;
+
+  api("/admin/me")
+    .then(() => {
+      if (active) setIsAdmin(true);
+    })
+    .catch(() => {
+      if (active) setIsAdmin(false);
+    });
+
+  return () => {
+    active = false;
+  };
+}, []);
+
 
   useEffect(() => {
     let active = true;
@@ -221,26 +241,28 @@ const goalCurrent = !mainGoal
 </div>
 </section>
 
-        {/* BACKEND ACTIONS */}
-        <div className="featured-actions" style={{ marginBottom: "22px" }}>
-          <Link className="primary-button" to="/search">Search books</Link>
-          <button type="button" className="secondary-button" onClick={logout}>
-            Log out
-          </button>
-        </div>
-        {serverError && (
-          <p role="status">
-            Server dashboard unavailable: {serverError}. Displaying local reading data.
-          </p>
-        )}
-        {serverData?.counts && (
-          <section aria-label="Server reading summary" style={{ marginBottom: "24px" }}>
-            <p className="small-label">ACCOUNT DATA FROM SERVER</p>
-            <p>
-              {serverData.counts.reading ?? 0} reading · {serverData.counts.finished ?? 0} finished · {serverData.counts.want ?? 0} want to read
-            </p>
-          </section>
-        )}
+        
+{/* BACKEND ACTIONS */}
+<div className="featured-actions" style={{ marginBottom: "22px" }}>
+  <Link className="primary-button" to="/search">
+    Search books
+  </Link>
+
+  {isAdmin && (
+    <Link className="secondary-button" to="/admin">
+      Admin Dashboard 
+    </Link>
+  )}
+
+  <button
+    type="button"
+    className="secondary-button"
+    onClick={logout}
+  >
+    Log out
+  </button>
+</div>
+
 
         {/* CURRENTLY READING */}
         <section className="featured-reading">

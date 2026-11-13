@@ -85,9 +85,6 @@ function Library() {
   return (
     <>
       <main className="library-page">
-        <Link to="/dashboard" className="library-back-link">
-          ← Back to overview
-        </Link>
 
         <section className="library-hero">
           <div>
@@ -107,9 +104,7 @@ function Library() {
           </button>
         </section>
 
-        <p>
-          <Link to="/search" className="text-link">Search for books →</Link>
-        </p>
+
 
         {(showAddForm || editingBook) && (
           <AddBookForm
@@ -261,7 +256,7 @@ function Library() {
         )}
 
         {/* Server books are shown separately until backend and BooksContext are unified. */}
-        {hasSession && (
+        {false && hasSession && (
           <section className="recent-library-section">
             <h2>Account library (server)</h2>
             <p>These books come from your account's backend library. Changes here do not yet update local reading statistics and goals.</p>

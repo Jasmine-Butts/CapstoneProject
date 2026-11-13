@@ -168,13 +168,6 @@ function Wishlist() {
     <>
       <main className="wishlist-page">
 
-        {/* BACK TO DASHBOARD */}
-        <Link
-          to="/dashboard"
-          className="wishlist-back-link"
-        >
-          ← Back to overview
-        </Link>
 
         {/* HERO */}
         <section className="wishlist-hero">

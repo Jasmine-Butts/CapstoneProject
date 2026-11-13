@@ -2,32 +2,14 @@
 import {
   createContext,
   useContext,
+  useEffect,
   useState,
 } from "react";
 
+import { api } from "../services/api";
 import { profileData } from "../data/profileData";
 
 const ProfileContext = createContext(null);
-const STORAGE_KEY = "readscape-profile";
-
-function loadProfile() {
-  try {
-    const saved = localStorage.getItem(STORAGE_KEY);
-
-    if (saved !== null) {
-      const parsed = JSON.parse(saved);
-
-      if (parsed && typeof parsed === "object" &&
-          !Array.isArray(parsed)) {
-        return { ...profileData, ...parsed };
-      }
-    }
-  } catch (error) {
-    console.error("Could not load profile:", error);
-  }
-
-  return { ...profileData };
-}
 
 function getInitials(name) {
   const parts = String(name || "")
@@ -45,24 +27,88 @@ function getInitials(name) {
 }
 
 export function ProfileProvider({ children }) {
-  const [profile, setProfile] = useState(loadProfile);
+  const [profile, setProfile] = useState({ ...profileData });
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
-  function updateProfile(changes) {
-    const updated = {
-      ...profile,
-      ...changes,
+  useEffect(() => {
+    let active = true;
+
+    async function loadProfile() {
+      const token = sessionStorage.getItem("readscapeToken");
+
+      if (!token) {
+        if (active) {
+          setProfile({ ...profileData });
+          setLoading(false);
+        }
+        return;
+      }
+
+      setLoading(true);
+      setError("");
+
+      try {
+        const data = await api("/auth/me");
+
+        if (active) {
+          setProfile({
+            ...profileData,
+            ...data.user,
+          });
+        }
+      } catch (err) {
+        if (active) {
+          setError(err.message);
+          console.error("Could not load profile:", err);
+        }
+      } finally {
+        if (active) setLoading(false);
+      }
+    }
+
+    loadProfile();
+
+    window.addEventListener("readscape-auth-changed", loadProfile);
+
+    return () => {
+      active = false;
+      window.removeEventListener(
+        "readscape-auth-changed",
+        loadProfile
+      );
     };
+  }, []);
+
+  async function updateProfile(changes) {
+    setError("");
 
     try {
-      localStorage.setItem(
-        STORAGE_KEY,
-        JSON.stringify(updated)
-      );
+      const data = await api("/auth/profile", {
+        method: "PATCH",
+        body: JSON.stringify({
+          name: changes.name ?? profile.name,
+          username: changes.username ?? profile.username,
+          bio: changes.bio ?? profile.bio ?? "",
+          location: changes.location ?? profile.location ?? "",
+        }),
+      }); 
 
-      setProfile(updated);
+      setProfile({
+        ...profileData,
+        ...data.user,
+        readerSince: data.user.created_at
+          ? new Date(data.user.created_at).toLocaleDateString("en-US", {
+            month: "long",
+            year: "numeric",
+            })
+          : "",
+      });
+
       return true;
-    } catch (error) {
-      console.error("Could not save profile:", error);
+    } catch (err) {
+      setError(err.message);
+      console.error("Could not update profile:", err);
       return false;
     }
   }
@@ -73,6 +119,8 @@ export function ProfileProvider({ children }) {
         profile,
         initials: getInitials(profile.name),
         updateProfile,
+        loading,
+        error,
       }}
     >
       {children}

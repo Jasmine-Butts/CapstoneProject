@@ -12,50 +12,82 @@ function AddBookForm({ onAdd, onSave, onClose, book = null }) {
     cover: book?.cover || "",
   });
 
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
+
   function handleChange(event) {
     const { name, value } = event.target;
 
-    setForm((previous) => ({
+    setForm(previous => ({
       ...previous,
       [name]: value,
     }));
+
+    setError("");
   }
 
-  function handleSubmit(event) {
+  async function handleSubmit(event) {
     event.preventDefault();
 
-    if (!form.title.trim() || !form.author.trim()) {
+    if (saving) return;
+
+    const title = form.title.trim();
+    const author = form.author.trim();
+    const pages = Number(form.pages);
+
+    if (!title || !author) {
+      setError("Book title and author are required.");
       return;
     }
 
-    const pages = Number(form.pages);
+    if (!Number.isSafeInteger(pages) || pages <= 0) {
+      setError("Enter a valid number of pages.");
+      return;
+    }
 
-    if (!Number.isInteger(pages) || pages <= 0) {
+    if (isEditing && pages < Number(book.currentPage || 0)) {
+      setError(
+        "Total pages cannot be less than your current reading page."
+      );
       return;
     }
 
     const bookData = {
-      title: form.title.trim(),
-      author: form.author.trim(),
+      title,
+      author,
       genre: form.genre.trim() || "Other",
       pages,
       cover: form.cover.trim() ||
         "https://images.unsplash.com/photo-1495446815901-a7297e633e8d?w=600",
     };
 
-    if (isEditing) {
-      onSave(book.id, bookData);
-    } else {
-      onAdd(bookData);
-    }
+    setSaving(true);
+    setError("");
 
-    onClose();
+    try {
+      const result = isEditing
+        ? await onSave(book.id, bookData)
+        : await onAdd(bookData);
+
+      if (result) {
+        onClose();
+      } else {
+        setError(
+          isEditing
+            ? "Unable to save book changes. Please try again."
+            : "Unable to add book. Please try again."
+        );
+      }
+    } catch (err) {
+      setError(err.message || "Unable to save book.");
+    } finally {
+      setSaving(false);
+    }
   }
 
   return (
     <div className="book-form-overlay">
       <form className="book-form" onSubmit={handleSubmit}>
-
         <h2>
           {isEditing ? "Edit Book" : "Add a New Book"}
         </h2>
@@ -66,6 +98,7 @@ function AddBookForm({ onAdd, onSave, onClose, book = null }) {
           name="title"
           value={form.title}
           onChange={handleChange}
+          maxLength={300}
           required
         />
 
@@ -75,6 +108,7 @@ function AddBookForm({ onAdd, onSave, onClose, book = null }) {
           name="author"
           value={form.author}
           onChange={handleChange}
+          maxLength={300}
           required
         />
 
@@ -84,6 +118,7 @@ function AddBookForm({ onAdd, onSave, onClose, book = null }) {
           name="genre"
           value={form.genre}
           onChange={handleChange}
+          maxLength={200}
         />
 
         <label htmlFor="book-pages">Total Pages</label>
@@ -108,18 +143,32 @@ function AddBookForm({ onAdd, onSave, onClose, book = null }) {
           value={form.cover}
           onChange={handleChange}
           placeholder="https://..."
+          maxLength={2000}
         />
 
+        {error && (
+          <p role="alert" style={{ color: "#a43e3e" }}>
+            {error}
+          </p>
+        )}
+
         <div className="book-form-actions">
-          <button type="button" onClick={onClose}>
+          <button
+            type="button"
+            onClick={onClose}
+            disabled={saving}
+          >
             Cancel
           </button>
 
-          <button type="submit">
-            {isEditing ? "Save Changes" : "Add Book"}
+          <button type="submit" disabled={saving}>
+            {saving
+              ? "Saving..."
+              : isEditing
+                ? "Save Changes"
+                : "Add Book"}
           </button>
         </div>
-
       </form>
     </div>
   );

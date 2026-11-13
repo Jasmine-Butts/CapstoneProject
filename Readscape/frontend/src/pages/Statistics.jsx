@@ -205,12 +205,6 @@ function Statistics() {
   return (
     <>
       <main className="statistics-page">
-        <Link
-          to="/dashboard"
-          className="statistics-back-link"
-        >
-          ← Back to overview
-        </Link>
 
         {/* HERO */}
         <section className="statistics-hero">
@@ -404,7 +398,7 @@ function Statistics() {
           <div className="footer-bottom-row">
             <span>© 2026 Readscape</span>
             <Link to="/library">Library</Link>
-            <span>Reading data saved locally</span>
+            <span>Reading data saved to your account</span>
           </div>
         </div>
       </footer>
