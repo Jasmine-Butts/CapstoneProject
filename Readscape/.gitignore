@@ -5,8 +5,11 @@ target/
 !**/src/test/**/target/
 
 # Spring Boot configuration
-**/application.properties
+application.properties
+application-local.properties
+application-dev.properties
 
+# Environment variables
 .env
 .env.local
 backend/.env
