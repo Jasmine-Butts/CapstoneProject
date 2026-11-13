@@ -1,4 +1,3 @@
-
 import {
   BrowserRouter,
   Routes,
@@ -7,6 +6,8 @@ import {
 } from "react-router-dom";
 
 import AppShell from "./components/AppShell";
+
+import AdminGuard from "./components/AdminGuard";
 
 // Main application pages
 import Search from "./pages/Search";
@@ -18,7 +19,9 @@ import Statistics from "./pages/Statistics";
 import Goals from "./pages/Goals";
 import Profile from "./pages/Profile";
 import Friends from "./pages/Friends";
+import FriendProfile from "./pages/FriendProfile";
 import Clubs from "./pages/Clubs";
+import ClubDetails from "./pages/ClubDetails";
 import EditProfile from "./pages/EditProfile";
 
 // Authentication pages
@@ -28,7 +31,13 @@ import ForgotPassword from "./pages/auth/ForgotPassword";
 
 // Admin and Moderator pages
 import AdminDashboard from "./pages/AdminDashboard";
+import AdminUsers from "./pages/AdminUsers";
+import AdminClubs from "./pages/AdminClubs";
+import AdminModerators from "./pages/AdminModerators";
 import ModeratorDashboard from "./pages/ModeratorDashboard";
+import ModerationReports from "./pages/ModerationReports";
+import SubmitReport from "./pages/SubmitReport";
+import AdminActivity from "./pages/AdminActivity";
 
 // Require a login before accessing reader pages
 function RequireLogin() {
@@ -62,17 +71,44 @@ function App() {
           element={<ForgotPassword />}
         />
 
-        {/* Admin Dashboard */}
-        <Route
-          path="/admin"
-          element={<AdminDashboard />}
-        />
-
         {/* Moderator Dashboard */}
         <Route
           path="/moderator"
           element={<ModeratorDashboard />}
         />
+
+
+{/* Admin pages - Login and Admin role required */}
+
+<Route element={<RequireLogin />}>
+  <Route element={<AdminGuard />}>
+    <Route
+      path="/admin"
+      element={<AdminDashboard />}
+    />
+
+    <Route
+      path="/admin/users"
+      element={<AdminUsers />}
+    />
+
+    <Route
+      path="/admin/clubs"
+      element={<AdminClubs />}
+    />
+
+    <Route
+      path="/admin/moderators"
+      element={<AdminModerators />}
+    />
+
+  <Route
+    path="/admin/activity"
+    element={<AdminActivity />}
+  />
+  </Route>
+</Route>
+
 
         {/* Main application - Login required */}
         <Route element={<RequireLogin />}>
@@ -117,8 +153,18 @@ function App() {
           />
 
           <Route
+          path="/friends/:id"
+          element={<FriendProfile />}
+          />
+
+          <Route
             path="/clubs"
             element={<Clubs />}
+          />
+
+          <Route
+            path="/clubs/:id"
+            element={<ClubDetails />}
           />
 
           <Route
@@ -130,7 +176,18 @@ function App() {
             path="/profile/edit"
             element={<EditProfile />}
           />
+
+          <Route
+            path="/moderation-reports"
+            element={<ModerationReports />}
+          />
+
+          <Route
+            path="/report"
+            element={<SubmitReport />}
+          />
         </Route>
+
 
         {/* Unknown routes */}
         <Route

@@ -1,4 +1,3 @@
-
 import { Link } from "react-router-dom";
 import { useSharedProfile } from "../context/ProfileContext";
 import { useSharedBooks } from "../context/BooksContext";
@@ -78,12 +77,6 @@ function Profile() {
   return (
     <>
       <main className="profile-page">
-        <Link
-          to="/dashboard"
-          className="profile-back-link"
-        >
-          ← Back to overview
-        </Link>
 
         {/* PROFILE HEADER */}
         <section className="profile-header">
@@ -266,7 +259,7 @@ function Profile() {
           <div className="footer-bottom-row">
             <span>© 2026 Readscape</span>
             <Link to="/library">Library</Link>
-            <span>Reading data saved locally</span>
+            <span>Reading data saved to your account</span>
           </div>
         </div>
       </footer>

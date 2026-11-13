@@ -19,8 +19,7 @@ export default function Search() {
     catch(error) { setMessage(error.message); } finally { setSaving(null); }
   }
   return <main className="library-page">
-    <Link to="/dashboard">← Dashboard</Link>
-    <section className="library-hero"><div><p className="small-label">DISCOVER YOUR NEXT BOOK</p><h1>Search books</h1><p>Find a title or author and add a book to your collection.</p></div><Link to="/library">My library →</Link></section>
+    <section className="library-hero"><div><p className="small-label">DISCOVER YOUR NEXT BOOK</p><h1>Search books</h1><p>Find a title or author and add a book to your collection.</p></div></section>
     <form className="library-controls" onSubmit={search}><input aria-label="Book title or author" value={query} onChange={e=>setQuery(e.target.value)} placeholder="Title or author" required maxLength={200}/><button className="primary-button" disabled={busy}>{busy?'Searching…':'Search'}</button></form>
     <p role="status">{message}</p>
     {searched && !books.length && <p>No books found. Try another title or author.</p>}

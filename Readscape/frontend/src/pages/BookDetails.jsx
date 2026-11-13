@@ -1,16 +1,6 @@
-import { useEffect, useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
-import { api } from '../services/api';
-export default function BookDetails() {
- const {id}=useParams();const [book,setBook]=useState(null);const [message,setMessage]=useState('Loading book…');
- useEffect(()=>{let active=true;api('/library').then(d=>{if(!active)return;const found=d.books.find(b=>b.id===id);setBook(found);setMessage(found?'':'Book not found in your library.');}).catch(e=>{if(active)setMessage(e.message);});return ()=>{active=false;};},[id]);
- return <main className="library-page"><Link to="/library">← Library</Link><p role="status">{message}</p>{book&&<article><h1>{book.title}</h1><p>{book.author}</p>{book.cover&&<img src={book.cover} alt={`${book.title} cover`}/>}<p>{book.pages || 'Unknown'} pages · {book.status}</p><p>{book.description.replace(/<[^>]*>/g,'')}</p></article>}</main>;
-}
-
-
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-
+import { api } from "../services/api";
 import { useSharedBooks } from "../context/BooksContext";
 import AddBookForm from "../components/AddBookForm";
 import UpdateProgressForm from "../components/UpdateProgressForm";
@@ -18,352 +8,168 @@ import UpdateProgressForm from "../components/UpdateProgressForm";
 function BookDetails() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { books, updateBook, removeBook, startReading, updateReadingProgress } = useSharedBooks();
 
-  const {
-    books,
-    updateBook,
-    removeBook,
-    startReading,
-    updateReadingProgress,
-  } = useSharedBooks();
-
-  const book = books.find(
-    (item) => String(item.id) === String(id)
-  );
-
+  const localBook = books.find((item) => String(item.id) === String(id));
+  const [serverBook, setServerBook] = useState(null);
+  const [loading, setLoading] = useState(!localBook);
+  const [loadError, setLoadError] = useState("");
   const [editingBook, setEditingBook] = useState(false);
   const [showProgressForm, setShowProgressForm] = useState(false);
-  const [showRemoveConfirmation, setShowRemoveConfirmation] =
-    useState(false);
-
+  const [showRemoveConfirmation, setShowRemoveConfirmation] = useState(false);
   const [noteDraft, setNoteDraft] = useState(null);
   const [noteSaved, setNoteSaved] = useState(false);
 
-  // Handle a book that does not exist.
+  // Look up server-side books only when the book is not found in local state.
+  useEffect(() => {
+    if (localBook) return;
+    let active = true;
+    api("/library")
+      .then((data) => {
+        if (!active) return;
+        const match = (data.books || []).find((item) => String(item.id) === String(id));
+        setServerBook(match || null);
+      })
+      .catch((error) => {
+        if (active) setLoadError(error.message || "Unable to load the book.");
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+    return () => { active = false; };
+  }, [id, localBook]);
+
+  const book = localBook || serverBook;
+  const isLocal = Boolean(localBook);
+
   if (!book) {
     return (
-      <main className="book-details-page">
-        <Link to="/library" className="library-back-link">
-          ← Back to library
-        </Link>
-
-        <h1>Book not found</h1>
-        <p>
-          This book may have been removed from your library.
-        </p>
-
-        <Link to="/library">Return to Library</Link>
+      <main className="library-page book-details-page">
+        <Link to="/library" className="library-back-link">← Back to library</Link>
+        <h1>{loading ? "Loading book…" : "Book not found"}</h1>
+        <p role="status">{loadError || (!loading ? "This book is not in your library." : "")}</p>
       </main>
     );
   }
 
   const totalPages = Number(book.pages) || 0;
-
   const currentPage = book.status === "finished"
     ? totalPages
-    : book.currentPage ??
-      Math.round(
-        totalPages * (Number(book.progress) || 0) / 100
-      );
-
+    : (book.currentPage ?? Math.round(totalPages * (Number(book.progress) || 0) / 100));
   const progress = book.status === "finished"
     ? 100
-    : Number(book.progress) || 0;
-
-  const statusLabels = {
-    want: "Want to Read",
-    reading: "Currently Reading",
-    finished: "Finished",
-  };
+    : totalPages > 0 ? Math.round((currentPage / totalPages) * 100) : Number(book.progress) || 0;
+  const statusLabels = { want: "Want to Read", reading: "Currently Reading", finished: "Finished" };
 
   function handleStatusChange(event) {
+    if (!isLocal) return;
     const newStatus = event.target.value;
-
     if (newStatus === "reading" && book.status === "want") {
       startReading(book.id);
     } else if (newStatus === "finished") {
       updateReadingProgress(book.id, totalPages);
     } else if (newStatus === "want") {
-      updateBook(book.id, {
-        status: "want",
-        currentPage: 0,
-        progress: 0,
-        finishedDate: undefined,
-      });
+      updateBook(book.id, { status: "want", currentPage: 0, progress: 0, finishedDate: undefined, finishedAt: undefined });
     } else {
-      updateBook(book.id, {
-        status: newStatus,
-        finishedDate: undefined,
-      });
+      updateBook(book.id, { status: newStatus, finishedDate: undefined, finishedAt: undefined });
     }
   }
 
   function saveNote() {
-    const value = (noteDraft ?? book.note ?? "").trim();
-
-    updateBook(book.id, { note: value });
+    if (!isLocal) return;
+    updateBook(book.id, { note: (noteDraft ?? book.note ?? "").trim() });
     setNoteSaved(true);
   }
 
   function confirmRemove() {
+    if (!isLocal) return;
     removeBook(book.id);
     navigate("/library");
   }
 
   return (
     <>
-      <main
-        className="library-page book-details-page"
-      >
-        <Link
-          to="/library"
-          className="library-back-link"
-        >
-          ← Back to library
-        </Link>
-
-        {/* BOOK INFORMATION */}
+      <main className="library-page book-details-page">
+        <Link to="/library" className="library-back-link">← Back to library</Link>
         <section className="book-details-hero">
-
           <div className="book-details-cover-wrap">
-            <img
-              src={book.cover}
-              alt={`${book.title} cover`}
-              className="book-details-cover"
-            />
+            {book.cover && <img src={book.cover} alt={`${book.title} cover`} className="book-details-cover" />}
           </div>
-
           <div className="book-details-info">
-
-            <p className="small-label">
-              YOUR BOOK COLLECTION
-            </p>
-
+            <p className="small-label">YOUR BOOK COLLECTION</p>
             <h1>{book.title}</h1>
-
-            <p className="book-details-author">
-              by {book.author}
-            </p>
-
-            <p className="book-details-meta">
-              {book.genre} · {book.pages} pages
-            </p>
-
-            {/* READING STATUS */}
+            <p className="book-details-author">by {book.author}</p>
+            <p className="book-details-meta">{book.genre || "Book"} · {book.pages || "Unknown"} pages</p>
+            {!isLocal && <p role="status">This book comes from your server library. Editing, progress changes, and notes for server books will be enabled after data synchronization is completed.</p>}
             <div className="book-details-field">
-              <label htmlFor="book-reading-status">
-                Reading status
-              </label>
-
-              <select
-                id="book-reading-status"
-                value={book.status}
-                onChange={handleStatusChange}
-              >
+              <label htmlFor="book-reading-status">Reading status</label>
+              <select id="book-reading-status" value={book.status || "want"} onChange={handleStatusChange} disabled={!isLocal}>
                 <option value="want">Want to Read</option>
-                <option value="reading">
-                  Currently Reading
-                </option>
+                <option value="reading">Currently Reading</option>
                 <option value="finished">Finished</option>
               </select>
             </div>
-
-            <p>
-              Status:{" "}
-              <strong>
-                {statusLabels[book.status] || book.status}
-              </strong>
-            </p>
-
-            {/* READING PROGRESS */}
+            <p>Status: <strong>{statusLabels[book.status] || book.status || "Unknown"}</strong></p>
             {book.status === "reading" && (
               <div className="book-details-progress">
-
-                <div className="featured-progress-row">
-                  <span>
-                    {progress}% complete
-                  </span>
-
-                  <span>
-                    {currentPage} / {totalPages} pages
-                  </span>
-                </div>
-
-                <div className="featured-progress-bar">
-                  <div
-                    style={{
-                      width: `${progress}%`,
-                    }}
-                  />
-                </div>
-
-                <button
-                  type="button"
-                  className="primary-button"
-                  onClick={() => setShowProgressForm(true)}
-                >
-                  Update Progress
-                </button>
-
+                <div className="featured-progress-row"><span>{progress}% complete</span><span>{currentPage} / {totalPages} pages</span></div>
+                <div className="featured-progress-bar"><div style={{ width: `${Math.min(100, Math.max(0, progress))}%` }} /></div>
+                {isLocal && <button type="button" className="primary-button" onClick={() => setShowProgressForm(true)}>Update Progress</button>}
               </div>
             )}
-
-            {book.status === "finished" && (
-              <p>
-                ✓ Finished
-                {book.finishedDate
-                  ? ` on ${book.finishedDate}`
-                  : ""}
-              </p>
+            {book.status === "finished" && <p>✓ Finished{book.finishedDate ? ` on ${book.finishedDate}` : ""}</p>}
+            {isLocal && (
+              <div className="book-details-actions">
+                <button type="button" className="library-edit-button" onClick={() => setEditingBook(true)}>Edit Book</button>
+                <button type="button" className="library-remove-button" onClick={() => setShowRemoveConfirmation(true)}>Remove Book</button>
+              </div>
             )}
-
-            {/* ACTION BUTTONS */}
-            <div className="book-details-actions">
-              <button
-                type="button"
-                className="library-edit-button"
-                onClick={() => setEditingBook(true)}
-              >
-                Edit Book
-              </button>
-
-              <button
-                type="button"
-                className="library-remove-button"
-                onClick={() =>
-                  setShowRemoveConfirmation(true)
-                }
-              >
-                Remove Book
-              </button>
-            </div>
-
           </div>
         </section>
 
-        {/* PERSONAL READING NOTES */}
-        <section className="book-details-notes">
-          <p className="small-label">
-            MY READING JOURNAL
-          </p>
-
-          <h2>Notes & thoughts</h2>
-
-          <p>
-            Keep your favorite quotes, thoughts,
-            and reflections about this book.
-          </p>
-
-          <label htmlFor="book-note">
-            Personal notes
-          </label>
-
-          <textarea
-            id="book-note"
-            rows="6"
-            placeholder="What do you want to remember about this book?"
-            value={noteDraft ?? book.note ?? ""}
-            onChange={(event) => {
-              setNoteDraft(event.target.value);
-              setNoteSaved(false);
-            }}
-          />
-
-          <button
-            type="button"
-            className="primary-button"
-            onClick={saveNote}
-          >
-            Save Notes
-          </button>
-
-          {noteSaved && (
-            <p role="status">
-              Your notes have been saved.
-            </p>
-          )}
-        </section>
-
-        {/* EDIT BOOK */}
-        {editingBook && (
-          <AddBookForm
-            book={book}
-            onSave={updateBook}
-            onClose={() => setEditingBook(false)}
-          />
+        {book.description && (
+          <section className="book-details-notes">
+            <p className="small-label">ABOUT THIS BOOK</p>
+            <h2>Description</h2>
+            <p>{String(book.description).replace(/<[^>]*>/g, "")}</p>
+          </section>
         )}
 
-        {/* UPDATE PROGRESS */}
-        {showProgressForm && book.status === "reading" && (
-          <UpdateProgressForm
-            book={book}
-            onSave={updateReadingProgress}
-            onClose={() => setShowProgressForm(false)}
-          />
+        {isLocal && (
+          <section className="book-details-notes">
+            <p className="small-label">MY READING JOURNAL</p>
+            <h2>Notes & thoughts</h2>
+            <p>Keep your favorite quotes, thoughts, and reflections about this book.</p>
+            <label htmlFor="book-note">Personal notes</label>
+            <textarea id="book-note" rows={6} placeholder="What do you want to remember about this book?" value={noteDraft ?? book.note ?? ""}
+              onChange={(event) => { setNoteDraft(event.target.value); setNoteSaved(false); }} />
+            <button type="button" className="primary-button" onClick={saveNote}>Save Notes</button>
+            {noteSaved && <p role="status">Your notes have been saved.</p>}
+          </section>
         )}
 
-        {/* REMOVE CONFIRMATION */}
-        {showRemoveConfirmation && (
+        {isLocal && editingBook && <AddBookForm book={book} onSave={updateBook} onClose={() => setEditingBook(false)} />}
+        {isLocal && showProgressForm && book.status === "reading" && (
+          <UpdateProgressForm book={book} onSave={updateReadingProgress} onClose={() => setShowProgressForm(false)} />
+        )}
+        {isLocal && showRemoveConfirmation && (
           <div className="book-form-overlay">
-            <div
-              className="book-form"
-              role="alertdialog"
-              aria-modal="true"
-              aria-labelledby="book-remove-heading"
-            >
-              <h2 id="book-remove-heading">
-                Remove Book?
-              </h2>
-
-              <p>
-                Are you sure you want to remove{" "}
-                <strong>{book.title}</strong>?
-              </p>
-
-              <p>
-                This also removes it from your Wishlist
-                and Dashboard.
-              </p>
-
+            <div className="book-form" role="alertdialog" aria-modal="true" aria-labelledby="book-remove-heading">
+              <h2 id="book-remove-heading">Remove Book?</h2>
+              <p>Are you sure you want to remove <strong>{book.title}</strong>?</p>
+              <p>This also removes it from your Wishlist and Dashboard.</p>
               <div className="book-form-actions">
-                <button
-                  type="button"
-                  onClick={() =>
-                    setShowRemoveConfirmation(false)
-                  }
-                >
-                  Cancel
-                </button>
-
-                <button
-                  type="button"
-                  className="library-confirm-remove"
-                  onClick={confirmRemove}
-                >
-                  Remove Book
-                </button>
+                <button type="button" onClick={() => setShowRemoveConfirmation(false)}>Cancel</button>
+                <button type="button" className="library-confirm-remove" onClick={confirmRemove}>Remove Book</button>
               </div>
             </div>
           </div>
         )}
-
       </main>
-
       <footer className="dashboard-footer">
         <div className="footer-inner">
-          <div>
-            <h3>Readscape</h3>
-            <p>
-              A quieter place to keep every book,
-              thought, and reading milestone.
-            </p>
-          </div>
-
-          <div className="footer-bottom-row">
-            <span>© 2026 Readscape</span>
-            <Link to="/library">Library</Link>
-            <span>Reading data saved locally</span>
-          </div>
+          <div><h3>Readscape</h3><p>A quieter place to keep every book, thought, and reading milestone.</p></div>
+          <div className="footer-bottom-row"><span>© 2026 Readscape</span><Link to="/library">Library</Link><span>Reading data saved locally</span></div>
         </div>
       </footer>
     </>

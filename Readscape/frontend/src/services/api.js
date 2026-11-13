@@ -12,4 +12,7 @@ export async function api(path, options = {}) {
   }
   return data;
 }
-export function saveLogin(data) { sessionStorage.setItem('readscapeToken', data.token); }
+export function saveLogin(data) {
+  sessionStorage.setItem("readscapeToken", data.token);
+  window.dispatchEvent(new Event("readscape-auth-changed"));
+}
