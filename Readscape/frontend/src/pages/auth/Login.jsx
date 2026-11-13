@@ -3,6 +3,7 @@ import { useState } from "react";
 import { useAuth } from "../../services/AuthContext"; 
 
 import "./auth.css";
+import { api, saveLogin } from "../../services/api";
 
 function Login() {
   const [showPassword, setShowPassword] = useState(false);
@@ -112,7 +113,7 @@ function Login() {
 
           <form className="auth-form" onSubmit={handleSubmit}>
             <div className="form-group">
-              <label htmlFor="email">Email address</label>
+              <label htmlFor="email">Username or email</label>
 
               <div className="input-wrapper">
                 <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -122,7 +123,9 @@ function Login() {
 
                 <input
                   id="email"
-                  type="email"
+                  type="text"
+                  name="identifier"
+                  autoComplete="username"
                   placeholder="reader@example.com"
                   required
                   value={email}
@@ -142,6 +145,8 @@ function Login() {
 
                 <input
                   id="password"
+                  name="password"
+                  autoComplete="current-password"
                   type={showPassword ? "text" : "password"}
                   placeholder="At least 8 characters"
                   required

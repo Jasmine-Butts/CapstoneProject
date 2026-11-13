@@ -1,6 +1,8 @@
 package com.app.Readscape.security;
 
+import com.app.Readscape.repo.UserRepo;
 import com.app.Readscape.security.AuthFilter;
+import com.app.Readscape.security.InternalServiceAuthFilter;
 import com.app.Readscape.security.OAuth2SuccessHandler;
 import com.app.Readscape.security.CustomUserDetailsService;
 import com.app.Readscape.service.OAuth2AccountService;
@@ -36,13 +38,15 @@ import java.util.List;
 @Configuration
 public class SecurityConfig {
         
+    private final InternalServiceAuthFilter internalServiceAuthFilter;
     private final CustomUserDetailsService userDetailsService;
     private final AuthFilter authFilter;
     private final OAuth2AccountService oAuth2AccountService;
     private final OAuth2SuccessHandler oAuth2LoginSuccessHandler;
     
 
-    public SecurityConfig(CustomUserDetailsService userDetailsService, AuthFilter authFilter, OAuth2AccountService oAuth2AccountService, OAuth2SuccessHandler oAuth2LoginSuccessHandler) {
+    public SecurityConfig(InternalServiceAuthFilter internalServiceAuthFilter, CustomUserDetailsService userDetailsService, AuthFilter authFilter, OAuth2AccountService oAuth2AccountService, OAuth2SuccessHandler oAuth2LoginSuccessHandler) {
+        this.internalServiceAuthFilter = internalServiceAuthFilter;
         this.userDetailsService = userDetailsService;
         this.authFilter = authFilter;
         this.oAuth2AccountService = oAuth2AccountService;
@@ -111,7 +115,9 @@ public class SecurityConfig {
                     .requestMatchers("/moderator/**").hasAnyAuthority("ROLE_MODERATOR", "ROLE_ADMINISTRATOR")
                     .requestMatchers("/reader/**").hasAnyAuthority("ROLE_READER", "ROLE_MODERATOR", "ROLE_ADMINISTRATOR")
                     .requestMatchers("/recommendations/**").authenticated()
-                    
+                    .requestMatchers("/ai-test/**").authenticated()
+                    .requestMatchers("/internal/**").hasAuthority("ROLE_INTERNAL_SERVICE")
+
                     .anyRequest().authenticated()
                 )
 
@@ -128,8 +134,8 @@ public class SecurityConfig {
 
                 .formLogin(AbstractHttpConfigurer::disable)
                 .httpBasic(AbstractHttpConfigurer::disable)
+                .addFilterBefore(internalServiceAuthFilter, AuthFilter.class)
                 .addFilterBefore(authFilter, UsernamePasswordAuthenticationFilter.class);
-            
 
             return http.build();
         }

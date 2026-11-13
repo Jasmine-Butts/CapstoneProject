@@ -5,6 +5,6 @@ public record BookRecommendationDTO (
         String title,
         String author, 
         String description,
-        String thumbnailUrl,
+        String thumbnail,
         String recommendationReason
 ){}

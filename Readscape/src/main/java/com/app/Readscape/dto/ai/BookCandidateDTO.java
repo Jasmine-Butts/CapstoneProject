@@ -1,5 +1,15 @@
 package com.app.Readscape.dto.ai;
 
-public class BookCandidateDTO {
+import java.util.List;
+
+public record BookCandidateDTO(
+
+    String googleBooksId,
+    String title,
+    List<String> authors,
+    String description,
+    List<String> categories,
+    String thumbnail
     
-}
+) {}
+

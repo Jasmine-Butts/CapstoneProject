@@ -1,9 +1,9 @@
 package com.app.Readscape.controller;
 
+import com.app.Readscape.service.ai.RecommendationService;
+import com.app.Readscape.service.ai.ReadingProfileService;
 import com.app.Readscape.dto.ai.BookRecommendationDTO;
 import com.app.Readscape.dto.ai.ReadingProfileDTO;
-import com.app.Readscape.service.ai.ReadingProfileService;
-import com.app.Readscape.service.ai.RecommendationService;
 
 import java.security.Principal;
 import java.util.List;

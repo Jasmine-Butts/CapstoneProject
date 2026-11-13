@@ -6,9 +6,9 @@ function AppShell() {
     <div className="app-shell">
       <Navbar />
 
-      <main className="page-container">
-        <Outlet />
-      </main>
+      <main>
+  <Outlet />
+</main>
     </div>
   );
 }

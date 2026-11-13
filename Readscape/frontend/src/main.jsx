@@ -1,11 +1,22 @@
+
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
-import { AuthProvider } from "./services/AuthContext.jsx";
+
+import { BooksProvider } from "./context/BooksContext";
+import { GoalsProvider } from "./context/GoalsContext";
+import { ProfileProvider } from "./context/ProfileContext";
+
 import "./index.css";
 import App from "./App.jsx";
 
 createRoot(document.getElementById("root")).render(
-  <AuthProvider>
-    <App />
-  </AuthProvider>
+  <StrictMode>
+    <BooksProvider>
+      <GoalsProvider>
+        <ProfileProvider>
+          <App />
+        </ProfileProvider>
+      </GoalsProvider>
+    </BooksProvider>
+  </StrictMode>
 );
