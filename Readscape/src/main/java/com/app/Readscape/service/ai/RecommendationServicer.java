@@ -106,19 +106,14 @@ public class RecommendationServicer implements RecommendationService{
 
         List<String> queries = new ArrayList<>();
 
-        for (String genre : profile.preferredGenres().stream()
-            .limit(3).toList()) {
+        profile.preferredGenres().stream()
+            .limit(3)
+            .forEach(genre -> queries.add("subject:" + genre));
         
-            queries.add("subject:" + genre);
-        
-        }
-
-        for (String author : profile.favoriteAuthors().stream()
-            .limit(3).toList()) {
+        profile.favoriteAuthors().stream()
+            .limit(3)
+            .forEach(author -> queries.add("inauthor:" + author));
                 
-                queries.add("inauthor:" + author);
-        
-        } 
 
         if (queries.isEmpty()) {
             queries.add("subject:fiction");
@@ -128,8 +123,13 @@ public class RecommendationServicer implements RecommendationService{
         List<BookCandidateDTO> candidates = new ArrayList<>();
 
         for (String query : queries) {
-
-            candidates.addAll(bookCatalogClient.searchCandidates(query));
+            try {
+                candidates.addAll(bookCatalogClient.searchCandidates(query));
+            } catch (Exception e) {
+                // future implementation
+                // log the failed query and continue searches
+            }
+            
         }
 
         return candidates;

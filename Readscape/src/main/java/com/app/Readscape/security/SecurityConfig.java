@@ -115,6 +115,7 @@ public class SecurityConfig {
                     .requestMatchers("/moderator/**").hasAnyAuthority("ROLE_MODERATOR", "ROLE_ADMINISTRATOR")
                     .requestMatchers("/reader/**").hasAnyAuthority("ROLE_READER", "ROLE_MODERATOR", "ROLE_ADMINISTRATOR")
                     .requestMatchers("/recommendations/**").authenticated()
+                    .requestMatchers("/api/ai/**").authenticated()
                     .requestMatchers("/ai-test/**").authenticated()
                     .requestMatchers("/internal/**").hasAuthority("ROLE_INTERNAL_SERVICE")
 

@@ -27,25 +27,26 @@ public class ReadingProfileServicer implements ReadingProfileService {
     }
 
     @Override
-    public ReadingProfileDTO getProfileByUsername(String username) {
+    public ReadingProfileDTO getProfileByEmail(String email) {
 
         Long readerId = jdbcTemplate.query(
             """
             SELECT id
             FROM readscape_users
-            WHERE LOWER(username) = LOWER (?)
+            WHERE LOWER(email) = LOWER (?)
             """, rs -> rs.next() ? rs.getLong("id") : null,
-                username
+                email
             );
 
             if (readerId == null) {
-                throw new IllegalArgumentException("Reader not found: " + username);
+                throw new IllegalArgumentException("Reader not found: " + email);
             }
 
             return getProfileByReaderId(readerId);
 
     }
 
+    @Override 
     public ReadingProfileDTO getProfileByReaderId(Long readerId) {
         List<SavedBookDTO> savedBooks = jdbcTemplate.query(
             """
